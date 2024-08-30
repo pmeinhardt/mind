@@ -8,7 +8,7 @@ import { clsx } from "clsx";
 import type { Loro, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
 import { useMemo } from "react";
 
-import type { Node, Structure } from "./types";
+import type { Node, Structure } from "./model";
 
 // const strat = stratify().id(({ id }) => id).parentId(({ parent }) => parent);
 
