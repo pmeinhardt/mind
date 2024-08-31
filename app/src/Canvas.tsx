@@ -39,7 +39,7 @@ function Canvas({ doc, vector }: Props) {
   const meta = useMemo(() => doc.getMap("meta"), [doc, vector]);
 
   return (
-    <ParentSize className="h-full w-full rounded-xl border border-zinc-200 bg-white">
+    <ParentSize className="h-full w-full rounded-xl border border-violet-200/60 bg-white">
       {({ width, height }) => {
         if (width <= 1 || height <= 1) return null;
 

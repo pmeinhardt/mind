@@ -77,33 +77,33 @@ function Launcher({ onReady }: Props) {
       onDragLeave={onDragEnd}
       onDrop={onDrop}
     >
-      <div className="max-w-prose overflow-y-auto rounded-3xl border bg-white p-8">
-        <h2 className="mb-3 text-3xl font-semibold text-zinc-800">
+      <div className="max-w-prose overflow-y-auto rounded-3xl border border-violet-200/60 bg-white p-10 shadow-lg shadow-violet-800/5">
+        <h2 className="mb-3 bg-gradient-to-r from-violet-800 to-stone-900 bg-clip-text text-5xl font-semibold leading-tight text-transparent">
           Live mind-mapping
         </h2>
-        <p className="mb-4 text-lg font-thin text-zinc-400">
+        <p className="mb-4 text-lg font-extralight text-stone-400">
           Invite friends. Collect ideas and shape them. Together.
         </p>
-        <p className="mb-2 text-sm font-thin text-zinc-400">
+        <p className="mb-2 text-sm font-thin leading-snug text-stone-400">
           You can begin with a blank canvas for a fresh start, or, upload an
           existing mind map to continue working on. Use the buttons below, or,
           drop your snapshot file into this window.
         </p>
-        <p className="mb-10 text-sm font-thin text-zinc-400">
+        <p className="mb-11 text-sm font-thin leading-snug text-stone-400">
           You can then invite people to collaborate and edit with you. Live.
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <button
-            className="flex items-center gap-1 text-nowrap rounded-lg bg-emerald-300/30 px-3 py-2 font-normal text-emerald-600 transition-colors hover:bg-emerald-500/90 hover:text-white"
+            className="flex items-center gap-1 text-nowrap rounded-full bg-emerald-300/30 px-5 py-3 font-normal text-emerald-600 ring-2 ring-emerald-400/50 transition-colors hover:bg-emerald-500/90 hover:text-white hover:ring-emerald-100"
             type="button"
             onClick={createNewDoc}
           >
-            <SparklesIcon className="-ml-0.5 size-5" aria-hidden />
+            <SparklesIcon className="-ml-1 size-5" aria-hidden />
             Start from scratch
           </button>
-          <span className="font-light text-zinc-800">or</span>
+          <span className="font-light text-stone-400">or</span>
           <label
-            className="flex cursor-pointer items-center gap-1 text-nowrap rounded-lg bg-blue-300/30 px-3 py-2 font-normal text-blue-600 transition-colors hover:bg-blue-500/90 hover:text-white"
+            className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-blue-300/30 px-5 py-3 font-normal text-blue-600 ring-2 ring-blue-400/50 transition-colors hover:bg-blue-500/90 hover:text-white hover:ring-blue-100"
             htmlFor="file-input"
           >
             <DocumentArrowUpIcon className="-ml-0.5 size-5" aria-hidden />
@@ -129,15 +129,15 @@ function Launcher({ onReady }: Props) {
           "flex",
           "items-center",
           "justify-center",
-          "gap-2",
           "bg-violet-800/60",
-          "text-white",
           "backdrop-blur",
           !isDragging && "hidden",
         )}
       >
-        <ArrowDownTrayIcon className="size-8" aria-hidden />
-        <p className="text-4xl font-semibold">Let go to upload</p>
+        <div className="flex items-center gap-2 rounded-full border-4 border-violet-100/90 bg-violet-900/30 px-12 py-8 text-4xl font-semibold text-white">
+          <ArrowDownTrayIcon className="-ml-1 size-8" aria-hidden />
+          Let go to upload
+        </div>
       </div>
     </div>
   );
