@@ -104,7 +104,7 @@ function Launcher({ onReady }: Props) {
             htmlFor="file-input"
           >
             <DocumentArrowUpIcon className="-ml-0.5 size-5" aria-hidden />
-            Upload an existing state
+            Open .mind file
           </label>
           <input
             id="file-input"
