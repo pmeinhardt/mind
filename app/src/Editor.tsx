@@ -1,4 +1,5 @@
 import { BoltIcon } from "@heroicons/react/24/outline";
+import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
 import { Loro } from "loro-crdt";
 import { StrictMode, useEffect, useMemo, useState } from "react";
@@ -74,7 +75,7 @@ function Application({ doc }: Props) {
                   type="button"
                   onClick={() => {
                     const name = prompt("New name", meta.get("name"));
-                    if (typeof name !== "string" || name.length === 0) return;
+                    if (!isString(name) || name.length === 0) return;
                     meta.set("name", name);
                     doc.commit();
                   }}

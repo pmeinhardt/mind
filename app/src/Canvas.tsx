@@ -1,3 +1,4 @@
+import { isString, isUndefined } from "@sindresorhus/is";
 import { Group } from "@visx/group";
 import { hierarchy, Tree } from "@visx/hierarchy";
 import { ParentSize } from "@visx/responsive";
@@ -120,7 +121,7 @@ function Canvas({ doc, vector }: Props) {
                                   const n = graph.getNodeByID(node.data.id);
 
                                   console.log(n);
-                                  if (typeof n === "undefined") return;
+                                  if (isUndefined(n)) return;
 
                                   if (event.detail == 1) {
                                     n.data.set(
@@ -163,18 +164,18 @@ function Canvas({ doc, vector }: Props) {
                                 onClick={
                                   (/* event */) => {
                                     const n = graph.getNodeByID(node.data.id);
-                                    const nn =
-                                      typeof n !== "undefined"
-                                        ? n.createNode()
-                                        : graph.createNode();
+                                    const nn = isUndefined(n)
+                                      ? graph.createNode()
+                                      : n.createNode();
 
                                     const label = prompt("new label");
 
                                     if (
-                                      typeof label !== "string" ||
+                                      !isString(label) ||
                                       label.length === 0
-                                    )
+                                    ) {
                                       return;
+                                    }
 
                                     nn.data.set("label", label);
                                     nn.data.set("expanded", true);

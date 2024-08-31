@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
+    "@sindresorhus/is": "^7.0.0",
     "@visx/event": "^3.3.0",
     "@visx/group": "^3.3.0",
     "@visx/hierarchy": "^3.3.0",
