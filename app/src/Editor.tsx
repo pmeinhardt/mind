@@ -63,14 +63,14 @@ function Application({ doc }: Props) {
     <StrictMode>
       <div className="h-dvh w-dvw p-4">
         <div className="flex h-full w-full flex-col gap-4">
-          <div className="flex grow-0 items-center justify-between rounded-xl border border-violet-200/60 bg-white p-2 shadow-sm shadow-violet-800/10">
+          <div className="flex grow-0 items-center justify-between rounded-xl border-4 border-violet-200/60 bg-white p-2 shadow-sm shadow-violet-800/10">
             <div className="flex items-center gap-2">
               <div className="group relative">
-                <h2 className="text-nowrap px-3 py-2 font-semibold group-hover:text-violet-950">
+                <h2 className="text-nowrap px-3 py-2 font-bold text-stone-600 group-hover:text-violet-950">
                   {meta.get("name")}
                 </h2>
                 <button
-                  className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent hover:bg-violet-400/30"
+                  className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
                   type="button"
                   onClick={() => {
                     const name = prompt("New name", meta.get("name"));
@@ -85,7 +85,7 @@ function Application({ doc }: Props) {
               <ul className="flex items-center gap-1">
                 <li>
                   <button
-                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors hover:bg-blue-300/30 hover:text-blue-600"
+                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
                     type="button"
                     onClick={() => {
                       const bytes = doc.exportSnapshot();
@@ -99,7 +99,7 @@ function Application({ doc }: Props) {
                 </li>
                 <li>
                   <a
-                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors hover:bg-blue-300/30 hover:text-blue-600"
+                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
                     href="#"
                   >
                     Help
@@ -121,7 +121,7 @@ function Application({ doc }: Props) {
               <ul className="flex gap-1">
                 <li>
                   <a
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors hover:bg-blue-300/30 hover:text-blue-600"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
                     href="#"
                   >
                     <span className="">Collaborate</span>

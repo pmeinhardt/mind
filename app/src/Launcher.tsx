@@ -1,8 +1,5 @@
-import {
-  ArrowDownTrayIcon,
-  DocumentArrowUpIcon,
-  SparklesIcon,
-} from "@heroicons/react/24/outline";
+import { DocumentArrowUpIcon, SparklesIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { Loro } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
@@ -77,24 +74,24 @@ function Launcher({ onReady }: Props) {
       onDragLeave={onDragEnd}
       onDrop={onDrop}
     >
-      <div className="max-w-prose overflow-y-auto rounded-3xl border border-violet-200/60 bg-white p-10 shadow-lg shadow-violet-800/5">
-        <h2 className="mb-3 bg-gradient-to-r from-violet-800 to-stone-900 bg-clip-text text-5xl font-semibold leading-tight text-transparent">
-          Live mind-mapping
+      <div className="max-w-prose overflow-y-auto rounded-3xl border-4 border-violet-400/40 bg-white p-12 shadow-lg shadow-purple-800/5">
+        <h2 className="mb-3 bg-gradient-to-r from-purple-700 to-stone-600 bg-clip-text text-5xl font-semibold leading-tight text-transparent">
+          Mind+Map+Live.
         </h2>
-        <p className="mb-4 text-lg font-extralight text-stone-400">
+        <p className="mb-4 text-lg font-extralight text-stone-600">
           Invite friends. Collect ideas and shape them. Together.
         </p>
-        <p className="mb-2 text-sm font-thin leading-snug text-stone-400">
+        <p className="mb-2 text-sm font-extralight leading-snug text-stone-600">
           You can begin with a blank canvas for a fresh start, or, upload an
           existing mind map to continue working on. Use the buttons below, or,
           drop your snapshot file into this window.
         </p>
-        <p className="mb-11 text-sm font-thin leading-snug text-stone-400">
+        <p className="mb-11 text-sm font-extralight leading-snug text-stone-600">
           You can then invite people to collaborate and edit with you. Live.
         </p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <button
-            className="flex items-center gap-1 text-nowrap rounded-full bg-emerald-300/30 px-5 py-3 font-normal text-emerald-600 ring-2 ring-emerald-400/50 transition-colors hover:bg-emerald-500/90 hover:text-white hover:ring-emerald-100"
+            className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-purple-300/30 px-5 py-3 font-normal font-semibold text-purple-600 ring ring-purple-400/50 transition-colors duration-300 hover:bg-purple-500 hover:text-white hover:ring-purple-300"
             type="button"
             onClick={createNewDoc}
           >
@@ -103,7 +100,7 @@ function Launcher({ onReady }: Props) {
           </button>
           <span className="font-light text-stone-400">or</span>
           <label
-            className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-blue-300/30 px-5 py-3 font-normal text-blue-600 ring-2 ring-blue-400/50 transition-colors hover:bg-blue-500/90 hover:text-white hover:ring-blue-100"
+            className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-violet-300/30 px-5 py-3 font-normal font-semibold text-violet-600 ring ring-violet-400/50 transition-colors duration-300 hover:bg-violet-500 hover:text-white hover:ring-violet-300"
             htmlFor="file-input"
           >
             <DocumentArrowUpIcon className="-ml-0.5 size-5" aria-hidden />
@@ -134,7 +131,7 @@ function Launcher({ onReady }: Props) {
           !isDragging && "hidden",
         )}
       >
-        <div className="flex items-center gap-2 rounded-full border-4 border-violet-100/90 bg-violet-900/30 px-12 py-8 text-4xl font-semibold text-white">
+        <div className="flex items-center gap-2 rounded-full bg-purple-800/40 px-12 py-8 text-4xl font-semibold text-white ring-4 ring-purple-100/90">
           <ArrowDownTrayIcon className="-ml-1 size-8" aria-hidden />
           Let go to upload
         </div>
