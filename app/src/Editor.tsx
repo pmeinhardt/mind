@@ -17,6 +17,18 @@ function Application({ doc }: Props) {
 
   const [vector, setVector] = useState<string>();
 
+  // Prevent accidentally navigating away and losing changes
+
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handler);
+
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+
   // Send updates to peers
 
   useEffect(() => {
