@@ -133,7 +133,7 @@ function Launcher({ onReady }: Props) {
       >
         <div className="flex items-center gap-2 rounded-full bg-purple-800/40 px-12 py-8 text-4xl font-semibold text-white ring-4 ring-purple-100/90">
           <ArrowDownTrayIcon className="-ml-1 size-8" aria-hidden />
-          Let go to upload
+          Drop to open
         </div>
       </div>
     </div>
