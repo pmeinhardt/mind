@@ -1,8 +1,0 @@
-{
-  "exclude": ["static/"],
-  "imports": {
-    "@honojs/hono": "npm:hono@^4.5.8",
-    "@loro/loro": "npm:loro-crdt@^0.16.7"
-  },
-  "tasks": {}
-}

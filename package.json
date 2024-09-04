@@ -7,9 +7,9 @@
     "start": "vite serve",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",

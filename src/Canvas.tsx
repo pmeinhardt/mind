@@ -13,7 +13,7 @@ import type { Node, Structure } from "./model";
 
 // const strat = stratify().id(({ id }) => id).parentId(({ parent }) => parent);
 
-const g = { id: "root", meta: {} };
+const g = { id: "root", meta: {} } as const;
 
 const f = (node: LoroTreeNode<Node>) => ({
   id: node.id,
