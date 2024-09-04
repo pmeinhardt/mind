@@ -74,14 +74,11 @@ function Application({ doc }: Props) {
   const [me, setMe] = useState<Peer>();
 
   const onCollaborate = useCallback(() => {
-    // const peer = new Peer({
-    //   host: "localhost",
-    //   port: 9000,
-    //   path: "/",
-    //   debug: 3,
-    // });
-
-    const peer = new Peer({ debug: 3, secure: true });
+    const peer = new Peer({
+      host: "localhost",
+      port: 9000,
+      path: "/",
+    });
 
     const remote = window.location.hash.replace(/^#/, "");
     const mode = remote ? "collaborator" : "owner";
