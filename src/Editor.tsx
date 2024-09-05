@@ -5,13 +5,13 @@ import { Loro } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
-import Canvas from "./Canvas";
-import download from "./download";
+import { Canvas } from "./Canvas";
+import { download } from "./download";
 import type { Structure } from "./model";
 
 export type Props = { doc: Loro<Structure> };
 
-function Editor({ doc }: Props) {
+export function Editor({ doc }: Props) {
   const channel = useMemo(() => new BroadcastChannel("sync"), []);
 
   useEffect(() => () => channel.close(), [channel]);
@@ -246,5 +246,3 @@ function Editor({ doc }: Props) {
     </StrictMode>
   );
 }
-
-export default Editor;

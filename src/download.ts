@@ -1,4 +1,4 @@
-function download(parts: BlobPart[], type: string, filename: string) {
+export function download(parts: BlobPart[], type: string, filename: string) {
   // Create a blob object and a URL representing it
   const blob = new Blob(parts, { type });
   const url = URL.createObjectURL(blob);
@@ -19,5 +19,3 @@ function download(parts: BlobPart[], type: string, filename: string) {
     URL.revokeObjectURL(url);
   }, 150);
 }
-
-export default download;

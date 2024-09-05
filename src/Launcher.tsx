@@ -10,7 +10,7 @@ import { create, read } from "./model";
 
 export type Props = { onReady: (doc: Loro<Structure>) => void };
 
-function Launcher({ onReady }: Props) {
+export function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const createNewDoc = useCallback(() => {
@@ -141,5 +141,3 @@ function Launcher({ onReady }: Props) {
     </div>
   );
 }
-
-export default Launcher;

@@ -30,7 +30,7 @@ const h = (tree: LoroTree<Node>) =>
 
 export type Props = { doc: Loro<Structure>; vector: string };
 
-function Canvas({ doc, vector }: Props) {
+export function Canvas({ doc, vector }: Props) {
   const graph = useMemo(() => doc.getTree("main"), [doc]);
 
   // const nodes = useMemo(() => graph.toJSON(), [graph, vector]);
@@ -198,5 +198,3 @@ function Canvas({ doc, vector }: Props) {
     </ParentSize>
   );
 }
-
-export default Canvas;
