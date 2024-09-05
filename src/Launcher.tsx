@@ -6,7 +6,7 @@ import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useState } from "react";
 
 import type { Structure } from "./model";
-import read from "./read";
+import { create, read } from "./model";
 
 export type Props = { onReady: (doc: Loro<Structure>) => void };
 
@@ -14,10 +14,7 @@ function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const createNewDoc = useCallback(() => {
-    const doc = new Loro<Structure>();
-    const meta = doc.getMap("meta");
-    meta.set("name", "Topic");
-    onReady(doc);
+    onReady(create("Ideas"));
   }, [onReady]);
 
   const readDocFromFile = useCallback(
@@ -31,17 +28,23 @@ function Launcher({ onReady }: Props) {
     [onReady],
   );
 
-  const onDragOver = useCallback((event: DragEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    setIsDragging(true);
-  }, []);
+  const onDragOver = useCallback(
+    (event: DragEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      setIsDragging(true);
+    },
+    [setIsDragging],
+  );
 
-  const onDragEnd = useCallback((event: DragEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    setIsDragging(false);
-  }, []);
+  const onDragLeave = useCallback(
+    (event: DragEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      setIsDragging(false);
+    },
+    [setIsDragging],
+  );
 
   const onDrop = useCallback(
     (event: DragEvent) => {
@@ -55,12 +58,12 @@ function Launcher({ onReady }: Props) {
 
       setIsDragging(false);
     },
-    [readDocFromFile],
+    [readDocFromFile, setIsDragging],
   );
 
-  const onFileChange = useCallback(
+  const onFile = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target?.files?.[0];
+      const file = event.target?.files?.[0]; // we expect at most one file, any additional files will be ignored
       if (file) readDocFromFile(file);
     },
     [readDocFromFile],
@@ -70,8 +73,7 @@ function Launcher({ onReady }: Props) {
     <div
       className="flex h-dvh w-dvw items-center justify-center p-6"
       onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-      onDragLeave={onDragEnd}
+      onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
       <div className="max-w-prose overflow-y-auto rounded-3xl border-4 border-violet-400/40 bg-white p-12 shadow-lg shadow-purple-800/5">
@@ -111,7 +113,7 @@ function Launcher({ onReady }: Props) {
             className="sr-only"
             type="file"
             accept=".mind"
-            onChange={onFileChange}
+            onChange={onFile}
           />
         </div>
       </div>
