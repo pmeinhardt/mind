@@ -11,7 +11,7 @@ import type { Structure } from "./model";
 
 export type Props = { doc: Loro<Structure> };
 
-function Application({ doc }: Props) {
+function Editor({ doc }: Props) {
   const channel = useMemo(() => new BroadcastChannel("sync"), []);
 
   useEffect(() => () => channel.close(), [channel]);
@@ -247,4 +247,4 @@ function Application({ doc }: Props) {
   );
 }
 
-export default Application;
+export default Editor;
