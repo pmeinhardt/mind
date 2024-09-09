@@ -3,7 +3,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { Loro } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { Structure } from "./model";
 import { create, read } from "./model";
@@ -12,21 +12,34 @@ export type Props = { onReady: (doc: Loro<Structure>) => void };
 
 export function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [file, setFile] = useState<File>();
 
-  const createNewDoc = useCallback(() => {
-    onReady(create("Ideas"));
-  }, [onReady]);
+  useEffect(() => {
+    let obsolete = false;
 
-  const readDocFromFile = useCallback(
-    async (file: File) => {
-      try {
-        onReady(await read(file));
-      } catch (error) {
-        console.log(error); // TODO: Inform user about error
+    (async () => {
+      if (file) {
+        try {
+          const doc = await read(file);
+          if (obsolete) return;
+          onReady(doc);
+        } catch (error) {
+          if (obsolete) return;
+          console.error(error);
+          alert(error?.toString()); // TODO: Improve user feedback
+        }
       }
-    },
-    [onReady],
-  );
+    })();
+
+    return () => {
+      obsolete = true;
+    };
+  }, [file]);
+
+  const onStartFresh = useCallback(() => {
+    const doc = create("Ideas");
+    onReady(doc);
+  }, [onReady]);
 
   const onDragOver = useCallback(
     (event: DragEvent) => {
@@ -50,23 +63,19 @@ export function Launcher({ onReady }: Props) {
     (event: DragEvent) => {
       event.stopPropagation();
       event.preventDefault();
-
       const files = Array.from(event.dataTransfer.files ?? []);
-      const file = files[0]; // we expect at most one file, any additional files will be ignored
-
-      if (file) readDocFromFile(file);
-
+      setFile(files[0]); // we expect at most one file, any additional files will be ignored
       setIsDragging(false);
     },
-    [readDocFromFile, setIsDragging],
+    [setFile, setIsDragging],
   );
 
   const onFile = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target?.files?.[0]; // we expect at most one file, any additional files will be ignored
-      if (file) readDocFromFile(file);
+      const files = Array.from(event.target?.files ?? []);
+      setFile(files[0]); // we expect at most one file, any additional files will be ignored
     },
-    [readDocFromFile],
+    [setFile],
   );
 
   return (
@@ -95,7 +104,7 @@ export function Launcher({ onReady }: Props) {
           <button
             className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-purple-300/30 px-5 py-3 font-normal font-semibold text-purple-600 ring ring-purple-400/50 transition-colors duration-300 hover:bg-purple-500 hover:text-white hover:ring-purple-300"
             type="button"
-            onClick={createNewDoc}
+            onClick={onStartFresh}
           >
             <SparklesIcon className="-ml-1 size-5" aria-hidden />
             Start from scratch
