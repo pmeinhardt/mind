@@ -2,33 +2,41 @@ import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
 import { Loro } from "loro-crdt";
-import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Canvas } from "./Canvas";
 import { download } from "./download";
 import type { Structure } from "./model";
+import { Session } from "./session";
 
-export type Props = { doc: Loro<Structure> };
+function useConfirmNavigation(enabled: boolean) {
+  useEffect(() => {
+    if (enabled) {
+      const handler = (event: BeforeUnloadEvent) => {
+        event.preventDefault();
+      };
 
-export function Editor({ doc }: Props) {
-  const channel = useMemo(() => new BroadcastChannel("sync"), []);
+      window.addEventListener("beforeunload", handler);
 
-  useEffect(() => () => channel.close(), [channel]);
+      return () => window.removeEventListener("beforeunload", handler);
+    }
+  }, [enabled]);
+}
+
+export type Props = {
+  connect: (s: Session | undefined) => void;
+  session: Session | undefined;
+  doc: Loro<Structure>;
+};
+
+export function Editor({ connect, session, doc }: Props) {
+  const meta = useMemo(() => doc.getMap("meta"), [doc]);
 
   const [vector, setVector] = useState<string>();
 
   // Prevent accidentally navigating away and losing changes
 
-  useEffect(() => {
-    const handler = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-
-    window.addEventListener("beforeunload", handler);
-
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  useConfirmNavigation(true);
 
   // Send updates to peers
 
@@ -48,120 +56,42 @@ export function Editor({ doc }: Props) {
       if (event.by === "local") {
         const bytes = doc.exportFrom(last);
         last = doc.version();
-        channel.postMessage(bytes);
+
+        if (session) session.broadcast(bytes);
       }
     });
 
     return () => doc.unsubscribe(subscription);
-  }, [doc, channel]);
+  }, [doc, session]);
 
-  // Receive updates from peers
+  // Start hosting a session
 
-  useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      console.log("channel event", event);
-      const bytes = new Uint8Array(event.data);
+  const onCollaborate = useCallback(async () => {
+    const sess = new Session();
+
+    sess.on("ready", (id) => {
+      const url = new URL(window.location.toString());
+      url.hash = `join/${id}`;
+      console.log(url.toString());
+    });
+
+    sess.on("join", (conn) => {
+      console.debug("join", conn);
+      const bytes = doc.exportSnapshot();
+      sess.broadcast(bytes);
+    });
+
+    sess.on("data", (bytes) => {
       doc.import(bytes);
-    };
-
-    channel.addEventListener("message", handler);
-
-    return () => channel.removeEventListener("message", handler);
-  }, [doc, channel]);
-
-  const meta = useMemo(() => doc.getMap("meta"), [doc]);
-
-  const [me, setMe] = useState<Peer>();
-
-  const onCollaborate = useCallback(() => {
-    const peer = new Peer({
-      host: "localhost",
-      port: 9000,
-      path: "/",
+      sess.broadcast(bytes);
     });
 
-    const remote = window.location.hash.replace(/^#/, "");
-    const mode = remote ? "collaborator" : "owner";
-
-    console.log(mode, remote);
-
-    if (mode === "owner") {
-      peer.on("open", (id) => {
-        const url = new URL(window.location.toString());
-        url.hash = id;
-
-        console.log(url.toString());
-      });
-
-      peer.on("connection", (connection) => {
-        console.debug("connection", connection);
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open");
-          connection.send(doc.exportSnapshot());
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    } else {
-      peer.on("open", () => {
-        console.debug(`connecting to ${remote}…`);
-
-        const connection = peer.connect(remote, { reliable: true });
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open", peer.id);
-          connection.send("HELO");
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-          const buffer = data as ArrayBuffer;
-          doc.import(new Uint8Array(buffer));
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    }
-
-    peer.on("disconnected", (id) => {
-      console.debug("peer disconnected", id);
+    sess.on("close", () => {
+      connect(undefined); // TODO: Update state/UI
     });
 
-    peer.on("close", () => {
-      console.debug("peer close");
-    });
-
-    peer.on("error", (error) => {
-      console.error("peer error", error);
-    });
-
-    setMe(peer);
-  }, [doc, setMe]);
+    connect(sess);
+  }, [doc, connect]);
 
   // TODO: Add error boundary
 
@@ -225,16 +155,18 @@ export function Editor({ doc }: Props) {
             </div>
             <div className="flex items-center">
               <ul className="flex gap-1">
-                <li>
-                  <button
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    type="button"
-                    onClick={onCollaborate}
-                  >
-                    Collaborate
-                    <BoltIcon className="-mx-0.5 size-6" aria-hidden />
-                  </button>
-                </li>
+                {session ? null : (
+                  <li>
+                    <button
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+                      type="button"
+                      onClick={onCollaborate}
+                    >
+                      Collaborate
+                      <BoltIcon className="-mx-0.5 size-6" aria-hidden />
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

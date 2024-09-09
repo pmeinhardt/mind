@@ -23,6 +23,7 @@
     "@visx/text": "^3.3.0",
     "@visx/zoom": "^3.3.0",
     "clsx": "^2.1.1",
+    "eventemitter3": "^5.0.1",
     "loro-crdt": "^0.16.10",
     "peerjs": "^1.5.4",
     "react": "^18.3.1",
