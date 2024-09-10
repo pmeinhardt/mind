@@ -2,6 +2,8 @@
 
 *Collaborative mind mapping*
 
+Disclaimer: This is very much a work in progress. ⚠️
+
 ## Prerequisites
 
 For development, you will need [Node.js](https://nodejs.org/) (v20+).
