@@ -26,6 +26,7 @@ const addon = {
   },
 };
 
+/** @type {import("eslint").Linter.Config[]} */
 export default [
   { files: ["**/*.{js,jsx,mjs,ts,tsx}"] },
   { ignores: ["dist"] },
