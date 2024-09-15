@@ -7,7 +7,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { Canvas } from "./Canvas";
 import { download } from "./download";
 import type { Structure } from "./model";
-import { Session } from "./session";
+import { HubSession, JoinedSession } from "./sessions";
 
 function useConfirmNavigation(enabled: boolean) {
   useEffect(() => {
@@ -24,8 +24,8 @@ function useConfirmNavigation(enabled: boolean) {
 }
 
 export type Props = {
-  connect: (s: Session | undefined) => void;
-  session: Session | undefined;
+  connect: (s: HubSession | JoinedSession | undefined) => void;
+  session: HubSession | JoinedSession | undefined;
   doc: Loro<Structure>;
 };
 
@@ -57,7 +57,7 @@ export function Editor({ connect, session, doc }: Props) {
         const bytes = doc.exportFrom(last);
         last = doc.version();
 
-        if (session) session.broadcast(bytes);
+        if (session) session.send(bytes);
       }
     });
 
@@ -67,7 +67,7 @@ export function Editor({ connect, session, doc }: Props) {
   // Start hosting a session
 
   const onCollaborate = useCallback(async () => {
-    const sess = new Session();
+    const sess = new HubSession();
 
     sess.on("ready", (id) => {
       const url = new URL(window.location.toString());
@@ -78,12 +78,12 @@ export function Editor({ connect, session, doc }: Props) {
     sess.on("join", (conn) => {
       console.debug("join", conn);
       const bytes = doc.exportSnapshot();
-      sess.broadcast(bytes);
+      sess.send(bytes);
     });
 
     sess.on("data", (bytes) => {
       doc.import(bytes);
-      sess.broadcast(bytes);
+      sess.send(bytes);
     });
 
     sess.on("close", () => {

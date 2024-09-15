@@ -5,10 +5,16 @@ import { Loro } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
+import * as config from "./config";
 import type { Structure } from "./model";
 import { create, read } from "./model";
+import { JoinedSession } from "./sessions";
 
-export type Props = { onReady: (doc: Loro<Structure>) => void };
+export type Init = { doc: Loro<Structure>; session?: JoinedSession };
+
+export type Props = {
+  onReady: (ini: Init) => void;
+};
 
 export function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -22,7 +28,7 @@ export function Launcher({ onReady }: Props) {
         try {
           const doc = await read(file);
           if (obsolete) return;
-          onReady(doc);
+          onReady({ doc });
         } catch (error) {
           if (obsolete) return;
           console.error(error);
@@ -36,9 +42,13 @@ export function Launcher({ onReady }: Props) {
     };
   }, [file]);
 
+  const onJoin = useCallback(() => {
+    //
+  });
+
   const onStartFresh = useCallback(() => {
     const doc = create("Ideas");
-    onReady(doc);
+    onReady({ doc });
   }, [onReady]);
 
   const onDragOver = useCallback(
@@ -77,6 +87,39 @@ export function Launcher({ onReady }: Props) {
     },
     [setFile],
   );
+
+  useEffect(() => {
+    const [cmd, arg] = location.hash.replace(/^#/, "").split("/");
+
+    if (cmd === "join") {
+      console.debug(`joining ${arg}`);
+
+      const doc = create("");
+      const session = new JoinedSession(config.session, arg);
+
+      // sess.on("ready", (id) => {
+      //   const url = new URL(window.location.toString());
+      //   url.hash = `join/${id}`;
+      //   console.log(url.toString());
+      // });
+
+      // sess.on("join", (conn) => {
+      //   console.debug("join", conn);
+      // });
+
+      // sess.on("error", console.error);
+
+      // sess.on("data", (bytes) => {
+      //   doc.import(bytes);
+      // });
+
+      // sess.on("close", () => {
+      //   setSession(undefined); // TODO: Update state/UI
+      // });
+
+      onReady({ doc, session });
+    }
+  }, [location]);
 
   return (
     <div
