@@ -28,9 +28,22 @@ export function verify(doc: Loro): asserts doc is Loro<Structure> {
   // const main = doc.getTree("main");
 }
 
-export function read(file: File): Promise<Loro<Structure>> {
+export function read(
+  file: File,
+  { signal }: { signal?: AbortSignal } = {},
+): Promise<Loro<Structure>> {
   return new Promise((resolve, reject) => {
+    if (signal && signal.aborted) {
+      reject(signal.reason);
+      return;
+    }
+
     const reader = new FileReader();
+
+    signal?.addEventListener("abort", () => {
+      reader.abort();
+      reject(signal.reason);
+    });
 
     reader.addEventListener("load", (event) => {
       const buffer = event.target?.result;

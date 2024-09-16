@@ -15,25 +15,21 @@ export function Launcher({ onReady }: Props) {
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
-    let obsolete = false;
+    const controller = new AbortController();
 
     (async () => {
       if (file) {
         try {
-          const doc = await read(file);
-          if (obsolete) return;
+          const doc = await read(file, { signal: controller.signal });
           onReady(doc);
         } catch (error) {
-          if (obsolete) return;
           console.error(error);
           alert(error?.toString()); // TODO: Improve user feedback
         }
       }
     })();
 
-    return () => {
-      obsolete = true;
-    };
+    return () => controller.abort();
   }, [file]);
 
   const onStartFresh = useCallback(() => {
