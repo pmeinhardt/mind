@@ -1,13 +1,14 @@
-import { BoltIcon } from "@heroicons/react/24/outline";
+import { BoltIcon, BoltSlashIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
 import { Loro } from "loro-crdt";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Canvas } from "./Canvas";
+import * as config from "./config";
 import { download } from "./download";
 import type { Structure } from "./model";
-import { Session } from "./session";
+import { GuestSession, HostSession } from "./sessions";
 
 function useConfirmNavigation(enabled: boolean) {
   useEffect(() => {
@@ -24,8 +25,8 @@ function useConfirmNavigation(enabled: boolean) {
 }
 
 export type Props = {
-  connect: (s: Session | undefined) => void;
-  session: Session | undefined;
+  connect: (s: HostSession | GuestSession | undefined) => void;
+  session: HostSession | GuestSession | undefined;
   doc: Loro<Structure>;
 };
 
@@ -39,6 +40,16 @@ export function Editor({ connect, session, doc }: Props) {
   useConfirmNavigation(true);
 
   // Send updates to peers
+
+  useEffect(() => {
+    if (session instanceof HostSession) {
+      //
+    } else if (session instanceof GuestSession) {
+      //
+    } else {
+      throw Error("");
+    }
+  }, [doc, session]);
 
   useEffect(() => {
     let last: VersionVector | undefined = undefined;
@@ -57,7 +68,7 @@ export function Editor({ connect, session, doc }: Props) {
         const bytes = doc.exportFrom(last);
         last = doc.version();
 
-        if (session) session.broadcast(bytes);
+        if (session) session.send(bytes);
       }
     });
 
@@ -66,24 +77,24 @@ export function Editor({ connect, session, doc }: Props) {
 
   // Start hosting a session
 
-  const onCollaborate = useCallback(async () => {
-    const sess = new Session();
+  const onCollaborate = useCallback(() => {
+    const sess = new HostSession(config.session);
 
     sess.on("ready", (id) => {
-      const url = new URL(window.location.toString());
-      url.hash = `join/${id}`;
-      console.log(url.toString());
+      const url = new URL(location.toString());
+      url.hash = `join:${id}`;
+      console.log(url.toString()); // TODO: Update state, show in UI
     });
 
     sess.on("join", (conn) => {
       console.debug("join", conn);
       const bytes = doc.exportSnapshot();
-      sess.broadcast(bytes);
+      sess.send(bytes);
     });
 
     sess.on("data", (bytes) => {
       doc.import(bytes);
-      sess.broadcast(bytes);
+      sess.send(bytes);
     });
 
     sess.on("close", () => {
@@ -92,6 +103,12 @@ export function Editor({ connect, session, doc }: Props) {
 
     connect(sess);
   }, [doc, connect]);
+
+  // Stop an ongoing session
+
+  const onEndSession = useCallback(() => {
+    if (session) session.close();
+  }, [session]);
 
   // TODO: Add error boundary
 
@@ -155,8 +172,17 @@ export function Editor({ connect, session, doc }: Props) {
             </div>
             <div className="flex items-center">
               <ul className="flex gap-1">
-                {session ? null : (
-                  <li>
+                <li>
+                  {session ? (
+                    <button
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+                      type="button"
+                      onClick={onEndSession}
+                    >
+                      End session
+                      <BoltSlashIcon className="-mx-0.5 size-6" aria-hidden />
+                    </button>
+                  ) : (
                     <button
                       className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
                       type="button"
@@ -165,8 +191,8 @@ export function Editor({ connect, session, doc }: Props) {
                       Collaborate
                       <BoltIcon className="-mx-0.5 size-6" aria-hidden />
                     </button>
-                  </li>
-                )}
+                  )}
+                </li>
               </ul>
             </div>
           </div>
