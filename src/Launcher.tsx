@@ -97,7 +97,7 @@ export function Launcher({ onReady }: Props) {
         console.debug(`session ${id} ready`);
       });
 
-      session.on("data", (bytes) => {
+      session.once("data", (bytes) => {
         try {
           doc.import(bytes);
           setIsBusy(false);
@@ -113,7 +113,7 @@ export function Launcher({ onReady }: Props) {
       //   setIsBusy(false);
       // });
 
-      return () => session.close();
+      // return () => session.close();
     }
 
     return () => {};

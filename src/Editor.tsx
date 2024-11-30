@@ -45,9 +45,15 @@ export function Editor({ connect, session, doc }: Props) {
     if (session instanceof HostSession) {
       //
     } else if (session instanceof GuestSession) {
+      session.on("data", (bytes) => {
+        try {
+          doc.import(bytes);
+        } catch (error) {
+          console.error(error);
+        }
+      });
       //
     } else {
-      throw Error("");
     }
   }, [doc, session]);
 
