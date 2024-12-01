@@ -43,7 +43,7 @@ export function Editor({ connect, session, doc }: Props) {
 
   useEffect(() => {
     if (session instanceof HostSession) {
-      //
+      // TODO
     } else if (session instanceof GuestSession) {
       session.on("data", (bytes) => {
         try {
@@ -52,8 +52,9 @@ export function Editor({ connect, session, doc }: Props) {
           console.error(error);
         }
       });
-      //
+      // TODO
     } else {
+      // TODO
     }
   }, [doc, session]);
 
