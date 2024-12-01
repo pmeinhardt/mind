@@ -5,40 +5,44 @@ import { Loro } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
+import * as config from "./config";
 import type { Structure } from "./model";
 import { create, read } from "./model";
+import { GuestSession } from "./sessions";
 
-export type Props = { onReady: (doc: Loro<Structure>) => void };
+export type Props = {
+  onReady: (state: { doc: Loro<Structure>; session?: GuestSession }) => void;
+};
 
 export function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isBusy, setIsBusy] = useState<boolean>(false);
   const [file, setFile] = useState<File>();
 
   useEffect(() => {
-    let obsolete = false;
+    const controller = new AbortController();
 
     (async () => {
       if (file) {
         try {
-          const doc = await read(file);
-          if (obsolete) return;
-          onReady(doc);
+          setIsBusy(true);
+          const doc = await read(file, { signal: controller.signal });
+          setIsBusy(false);
+          onReady({ doc });
         } catch (error) {
-          if (obsolete) return;
+          setIsBusy(false);
           console.error(error);
           alert(error?.toString()); // TODO: Improve user feedback
         }
       }
     })();
 
-    return () => {
-      obsolete = true;
-    };
+    return () => controller.abort();
   }, [file]);
 
   const onStartFresh = useCallback(() => {
     const doc = create("Ideas");
-    onReady(doc);
+    onReady({ doc });
   }, [onReady]);
 
   const onDragOver = useCallback(
@@ -77,6 +81,43 @@ export function Launcher({ onReady }: Props) {
     },
     [setFile],
   );
+
+  useEffect(() => {
+    const hash = location.hash.replace(/^#/, "");
+
+    if (hash.startsWith("join:") && hash.length > 5) {
+      const remote = hash.substring(5);
+
+      const session = new GuestSession(config.session, remote);
+      const doc = create("");
+
+      setIsBusy(true);
+
+      session.on("ready", (id) => {
+        console.debug(`session ${id} ready`);
+      });
+
+      session.once("data", (bytes) => {
+        try {
+          doc.import(bytes);
+          setIsBusy(false);
+          onReady({ doc, session });
+        } catch (error) {
+          setIsBusy(false);
+          console.error(error);
+          alert(error?.toString()); // TODO: Improve user feedback
+        }
+      });
+
+      // session.on("close", () => {
+      //   setIsBusy(false);
+      // });
+
+      // return () => session.close();
+    }
+
+    return () => {};
+  }, [location]);
 
   return (
     <div
@@ -126,6 +167,8 @@ export function Launcher({ onReady }: Props) {
           />
         </div>
       </div>
+
+      {/* TODO: Add GitHub link */}
 
       <div
         className={clsx(

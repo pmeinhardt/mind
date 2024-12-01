@@ -6,36 +6,52 @@ import imports from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import typescript from "typescript-eslint";
 
-const addon = {
-  imports: {
-    plugins: {
-      "simple-import-sort": imports,
+const config = {
+  files: [{ files: ["**/*.{js,jsx,mjs,ts,tsx}"] }],
+  globals: [{ languageOptions: { globals: globals.browser } }],
+  ignores: [{ ignores: ["dist"] }],
+  imports: [
+    {
+      plugins: {
+        "simple-import-sort": imports,
+      },
+      rules: {
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+      },
     },
-    rules: {
-      "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error",
+  ],
+  javascript: [javascript.configs.recommended],
+  jest: [
+    {
+      files: ["**/*.test.{js,jsx,mjs,ts,tsx}"],
+      ...jest.configs["flat/recommended"],
     },
-  },
-  jest: {
-    files: ["**/*.test.{js,jsx,mjs,ts,tsx}"],
-    ...jest.configs["flat/recommended"],
-  },
-  tailwind: {
-    files: ["tailwind.config.js"],
-    languageOptions: { sourceType: "commonjs" },
-  },
+  ],
+  prettier: [prettier],
+  react: [
+    { settings: { react: { version: "detect" } } },
+    react.configs.flat.recommended,
+    react.configs.flat["jsx-runtime"],
+  ],
+  tailwind: [
+    {
+      files: ["tailwind.config.js"],
+      languageOptions: { sourceType: "commonjs" },
+    },
+  ],
+  typescript: [...typescript.configs.recommended],
 };
 
 export default [
-  { files: ["**/*.{js,jsx,mjs,ts,tsx}"] },
-  { ignores: ["dist"] },
-  { languageOptions: { globals: globals.browser } },
-  javascript.configs.recommended,
-  ...typescript.configs.recommended,
-  react.configs.flat.recommended,
-  react.configs.flat["jsx-runtime"],
-  addon.imports,
-  addon.jest,
-  addon.tailwind,
-  prettier,
+  ...config.files,
+  ...config.ignores,
+  ...config.globals,
+  ...config.javascript,
+  ...config.typescript,
+  ...config.react,
+  ...config.imports,
+  ...config.jest,
+  ...config.tailwind,
+  ...config.prettier,
 ];

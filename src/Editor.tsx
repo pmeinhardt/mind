@@ -1,36 +1,62 @@
-import { BoltIcon } from "@heroicons/react/24/outline";
+import { BoltIcon, BoltSlashIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
 import { Loro } from "loro-crdt";
-import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Canvas } from "./Canvas";
+import * as config from "./config";
 import { download } from "./download";
 import type { Structure } from "./model";
+import { GuestSession, HostSession } from "./sessions";
 
-export type Props = { doc: Loro<Structure> };
+function useConfirmNavigation(enabled: boolean) {
+  useEffect(() => {
+    if (enabled) {
+      const handler = (event: BeforeUnloadEvent) => {
+        event.preventDefault();
+      };
 
-export function Editor({ doc }: Props) {
-  const channel = useMemo(() => new BroadcastChannel("sync"), []);
+      window.addEventListener("beforeunload", handler);
 
-  useEffect(() => () => channel.close(), [channel]);
+      return () => window.removeEventListener("beforeunload", handler);
+    }
+  }, [enabled]);
+}
+
+export type Props = {
+  connect: (s: HostSession | GuestSession | undefined) => void;
+  session: HostSession | GuestSession | undefined;
+  doc: Loro<Structure>;
+};
+
+export function Editor({ connect, session, doc }: Props) {
+  const meta = useMemo(() => doc.getMap("meta"), [doc]);
 
   const [vector, setVector] = useState<string>();
 
   // Prevent accidentally navigating away and losing changes
 
-  useEffect(() => {
-    const handler = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-
-    window.addEventListener("beforeunload", handler);
-
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  useConfirmNavigation(true);
 
   // Send updates to peers
+
+  useEffect(() => {
+    if (session instanceof HostSession) {
+      // TODO
+    } else if (session instanceof GuestSession) {
+      session.on("data", (bytes) => {
+        try {
+          doc.import(bytes);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+      // TODO
+    } else {
+      // TODO
+    }
+  }, [doc, session]);
 
   useEffect(() => {
     let last: VersionVector | undefined = undefined;
@@ -48,120 +74,48 @@ export function Editor({ doc }: Props) {
       if (event.by === "local") {
         const bytes = doc.exportFrom(last);
         last = doc.version();
-        channel.postMessage(bytes);
+
+        if (session) session.send(bytes);
       }
     });
 
     return () => doc.unsubscribe(subscription);
-  }, [doc, channel]);
+  }, [doc, session]);
 
-  // Receive updates from peers
-
-  useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      console.log("channel event", event);
-      const bytes = new Uint8Array(event.data);
-      doc.import(bytes);
-    };
-
-    channel.addEventListener("message", handler);
-
-    return () => channel.removeEventListener("message", handler);
-  }, [doc, channel]);
-
-  const meta = useMemo(() => doc.getMap("meta"), [doc]);
-
-  const [me, setMe] = useState<Peer>();
+  // Start hosting a session
 
   const onCollaborate = useCallback(() => {
-    const peer = new Peer({
-      host: "localhost",
-      port: 9000,
-      path: "/",
+    const sess = new HostSession(config.session);
+
+    sess.on("ready", (id) => {
+      const url = new URL(location.toString());
+      url.hash = `join:${id}`;
+      console.log(url.toString()); // TODO: Update state, show in UI
     });
 
-    const remote = window.location.hash.replace(/^#/, "");
-    const mode = remote ? "collaborator" : "owner";
-
-    console.log(mode, remote);
-
-    if (mode === "owner") {
-      peer.on("open", (id) => {
-        const url = new URL(window.location.toString());
-        url.hash = id;
-
-        console.log(url.toString());
-      });
-
-      peer.on("connection", (connection) => {
-        console.debug("connection", connection);
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open");
-          connection.send(doc.exportSnapshot());
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    } else {
-      peer.on("open", () => {
-        console.debug(`connecting to ${remote}…`);
-
-        const connection = peer.connect(remote, { reliable: true });
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open", peer.id);
-          connection.send("HELO");
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-          const buffer = data as ArrayBuffer;
-          doc.import(new Uint8Array(buffer));
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    }
-
-    peer.on("disconnected", (id) => {
-      console.debug("peer disconnected", id);
+    sess.on("join", (conn) => {
+      console.debug("join", conn);
+      const bytes = doc.exportSnapshot();
+      sess.send(bytes);
     });
 
-    peer.on("close", () => {
-      console.debug("peer close");
+    sess.on("data", (bytes) => {
+      doc.import(bytes);
+      sess.send(bytes);
     });
 
-    peer.on("error", (error) => {
-      console.error("peer error", error);
+    sess.on("close", () => {
+      connect(undefined); // TODO: Update state/UI
     });
 
-    setMe(peer);
-  }, [doc, setMe]);
+    connect(sess);
+  }, [doc, connect]);
+
+  // Stop an ongoing session
+
+  const onEndSession = useCallback(() => {
+    if (session) session.close();
+  }, [session]);
 
   // TODO: Add error boundary
 
@@ -226,14 +180,25 @@ export function Editor({ doc }: Props) {
             <div className="flex items-center">
               <ul className="flex gap-1">
                 <li>
-                  <button
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    type="button"
-                    onClick={onCollaborate}
-                  >
-                    Collaborate
-                    <BoltIcon className="-mx-0.5 size-6" aria-hidden />
-                  </button>
+                  {session ? (
+                    <button
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+                      type="button"
+                      onClick={onEndSession}
+                    >
+                      End session
+                      <BoltSlashIcon className="-mx-0.5 size-6" aria-hidden />
+                    </button>
+                  ) : (
+                    <button
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+                      type="button"
+                      onClick={onCollaborate}
+                    >
+                      Collaborate
+                      <BoltIcon className="-mx-0.5 size-6" aria-hidden />
+                    </button>
+                  )}
                 </li>
               </ul>
             </div>

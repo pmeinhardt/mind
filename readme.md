@@ -27,3 +27,9 @@ To use collaboration features, start the peer server.
 ```shell
 npm run peer-server
 ```
+
+## References
+
+- [Loro](https://github.com/loro-dev/loro)
+- [PeerJS](https://github.com/peers/peerjs)
+- [PeerJS Server](https://github.com/peers/peerjs-server)
