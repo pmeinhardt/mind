@@ -1,7 +1,7 @@
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
-import type { Loro } from "loro-crdt";
+import type { LoroDoc } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -9,7 +9,7 @@ import { Canvas } from "./Canvas";
 import { download } from "./download";
 import type { Structure } from "./model";
 
-export type Props = { doc: Loro<Structure> };
+export type Props = { doc: LoroDoc<Structure> };
 
 export function Editor({ doc }: Props) {
   const channel = useMemo(() => new BroadcastChannel("sync"), []);
@@ -35,24 +35,26 @@ export function Editor({ doc }: Props) {
   useEffect(() => {
     let last: VersionVector | undefined = undefined;
 
-    const subscription = doc.subscribe((event) => {
+    const unsubscribe = doc.subscribeLocalUpdates((event) => {
       console.log("doc event", event);
 
-      const vv = Object.fromEntries(doc.version().toJSON());
-      const v = Object.entries(vv)
-        .map(([key, value]) => `${key}:${value}`)
+      const v = doc
+        .version()
+        .toJSON()
+        .entries()
+        .map(([key, value]: [string, number]) => `${key}:${value}`)
+        .toArray()
         .join(" ");
 
       setVector(v);
 
-      if (event.by === "local") {
-        const bytes = doc.exportFrom(last);
-        last = doc.version();
-        channel.postMessage(bytes);
-      }
+      const bytes = doc.export({ mode: "update", from: last });
+      last = doc.version();
+
+      channel.postMessage(bytes);
     });
 
-    return () => doc.unsubscribe(subscription);
+    return unsubscribe;
   }, [doc, channel]);
 
   // Receive updates from peers
@@ -194,7 +196,11 @@ export function Editor({ doc }: Props) {
                     className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
                     type="button"
                     onClick={() => {
-                      const bytes = doc.exportSnapshot();
+                      const frontiers = doc.oplogFrontiers();
+                      const bytes = doc.export({
+                        mode: "shallow-snapshot",
+                        frontiers,
+                      });
                       const mime = "application/octet-stream";
                       const filename = `${meta.get("name").toLowerCase()}.mind`;
                       download([bytes], mime, filename);

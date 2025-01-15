@@ -6,7 +6,7 @@ import { Bar, Circle, LinkHorizontal as LinkComponent } from "@visx/shape";
 import { Text } from "@visx/text";
 import { Zoom } from "@visx/zoom";
 import { clsx } from "clsx";
-import type { Loro, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
+import type { LoroDoc, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
 import { useMemo } from "react";
 
 import type { Node, Structure } from "./model";
@@ -28,7 +28,7 @@ const h = (tree: LoroTree<Node>) =>
     return n.children()?.map(f);
   });
 
-export type Props = { doc: Loro<Structure>; vector: string };
+export type Props = { doc: LoroDoc<Structure>; vector: string };
 
 export function Canvas({ doc, vector }: Props) {
   const graph = useMemo(() => doc.getTree("main"), [doc]);
