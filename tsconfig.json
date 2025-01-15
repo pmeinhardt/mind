@@ -1,5 +1,5 @@
 {
-   "compilerOptions": {
+  "compilerOptions": {
     "target": "es2020",
     "useDefineForClassFields": true,
     "lib": ["es2020", "dom", "dom.iterable"],
@@ -19,6 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
-   },
-   "include": ["src"]
+  },
+
+  "include": ["src"]
 }
