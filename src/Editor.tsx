@@ -1,7 +1,7 @@
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
-import { Loro } from "loro-crdt";
+import type { Loro } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -71,7 +71,7 @@ export function Editor({ doc }: Props) {
 
   const meta = useMemo(() => doc.getMap("meta"), [doc]);
 
-  const [me, setMe] = useState<Peer>();
+  const [, setMe] = useState<Peer>();
 
   const onCollaborate = useCallback(() => {
     const peer = new Peer({
@@ -239,7 +239,7 @@ export function Editor({ doc }: Props) {
             </div>
           </div>
           <div className="grow">
-            <Canvas doc={doc} vector={vector} />
+            <Canvas doc={doc} vector={vector ?? ""} />
           </div>
         </div>
       </div>

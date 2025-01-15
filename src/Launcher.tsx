@@ -1,7 +1,7 @@
 import { DocumentArrowUpIcon, SparklesIcon } from "@heroicons/react/20/solid";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { Loro } from "loro-crdt";
+import type { Loro } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
