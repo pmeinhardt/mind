@@ -1,6 +1,6 @@
-import { Loro } from "loro-crdt";
+import { LoroDoc } from "loro-crdt";
 
-const doc = new Loro();
+const doc = new LoroDoc();
 
 const meta = doc.getMap("meta");
 const tree = doc.getTree("main");
@@ -27,8 +27,8 @@ const root2 = tree.createNode();
 root2.data.set("label", "Other");
 root2.data.set("expanded", true);
 
-const state = doc.exportFrom();
+const state = doc.export({ mode: "update" });
 console.log(`state size: ${state.length}`);
 
-const snapshot = doc.exportSnapshot();
+const snapshot = doc.export({ mode: "shallow-snapshot" });
 console.log(`snapshot size: ${snapshot.length}`);

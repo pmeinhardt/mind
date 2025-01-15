@@ -1,14 +1,14 @@
 import { DocumentArrowUpIcon, SparklesIcon } from "@heroicons/react/20/solid";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import type { Loro } from "loro-crdt";
+import type { LoroDoc } from "loro-crdt";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
 import type { Structure } from "./model";
 import { create, read } from "./model";
 
-export type Props = { onReady: (doc: Loro<Structure>) => void };
+export type Props = { onReady: (doc: LoroDoc<Structure>) => void };
 
 export function Launcher({ onReady }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);

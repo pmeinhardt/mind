@@ -1,5 +1,5 @@
 import type { LoroMap, LoroTree } from "loro-crdt";
-import { Loro } from "loro-crdt";
+import { LoroDoc } from "loro-crdt";
 
 export type Structure = {
   main: LoroTree<Node>;
@@ -15,20 +15,20 @@ export type Meta = {
   name: string;
 };
 
-export function create(name: string): Loro<Structure> {
-  const doc = new Loro<Structure>();
+export function create(name: string): LoroDoc<Structure> {
+  const doc = new LoroDoc<Structure>();
   const meta = doc.getMap("meta");
   meta.set("name", name);
   return doc;
 }
 
-export function verify(doc: Loro): asserts doc is Loro<Structure> {
+export function verify(doc: LoroDoc): asserts doc is LoroDoc<Structure> {
   // TODO: Verify document structure
   // const meta = doc.getMap("meta");
   // const main = doc.getTree("main");
 }
 
-export function read(file: File): Promise<Loro<Structure>> {
+export function read(file: File): Promise<LoroDoc<Structure>> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -38,7 +38,7 @@ export function read(file: File): Promise<Loro<Structure>> {
       if (typeof buffer === "undefined" || buffer === null) return;
 
       const bytes = new Uint8Array(buffer as ArrayBuffer);
-      const doc = new Loro();
+      const doc = new LoroDoc();
 
       try {
         doc.import(bytes);
