@@ -8,7 +8,7 @@ export type Structure = {
 
 export type Node = {
   expanded?: boolean;
-  label?: string;
+  label: string;
 };
 
 export type Meta = {
@@ -23,9 +23,19 @@ export function create(name: string): LoroDoc<Structure> {
 }
 
 export function verify(doc: LoroDoc): asserts doc is LoroDoc<Structure> {
-  // TODO: Verify document structure
-  // const meta = doc.getMap("meta");
-  // const main = doc.getTree("main");
+  const meta = doc.getMap("meta");
+
+  if (typeof meta.get("name") !== "string") {
+    throw Error("document meta is missing required property 'name'");
+  }
+
+  const main = doc.getTree("main");
+
+  for (const node of main.getNodes()) {
+    if (typeof node.data.get("label") !== "string") {
+      throw Error("node data is missing required property 'data'");
+    }
+  }
 }
 
 export function read(file: File): Promise<LoroDoc<Structure>> {
