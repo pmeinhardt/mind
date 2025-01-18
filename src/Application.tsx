@@ -5,9 +5,9 @@ import { Editor } from "./Editor";
 import { Launcher } from "./Launcher";
 import type { Structure } from "./model";
 
-export type Props = Record<string, never>;
+export type ApplicationProps = Record<string, never>;
 
-export function Application(_: Props) {
+export function Application(_: ApplicationProps) {
   const [doc, setDoc] = useState<LoroDoc<Structure>>();
   if (doc) return <Editor doc={doc} />;
   return <Launcher onReady={setDoc} />;
