@@ -6,7 +6,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Canvas } from "./Canvas";
 import { download } from "./download";
-import type { Doc } from "./model";
+import type { Doc } from "./model/types";
 
 export type EditorProps = { doc: Doc };
 
@@ -37,12 +37,10 @@ export function Editor({ doc }: EditorProps) {
     const unsubscribe = doc.subscribe((batch) => {
       console.log("doc event", event);
 
-      const v = doc
-        .version()
-        .toJSON()
-        .entries()
+      const vector = doc.version().toJSON();
+
+      const v = Array.from(vector.entries())
         .map(([key, value]: [string, number]) => `${key}:${value}`)
-        .toArray()
         .join(" ");
 
       setVersion(v);
@@ -217,7 +215,7 @@ export function Editor({ doc }: EditorProps) {
                 <li>
                   <a
                     className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    href="#"
+                    href="#TODO"
                   >
                     Help
                   </a>
