@@ -16,7 +16,7 @@ export function Editor({ doc }: Props) {
 
   useEffect(() => () => channel.close(), [channel]);
 
-  const [vector, setVector] = useState<string>();
+  const [version, setVersion] = useState<string>();
 
   // Prevent accidentally navigating away and losing changes
 
@@ -35,7 +35,7 @@ export function Editor({ doc }: Props) {
   useEffect(() => {
     let last: VersionVector | undefined = undefined;
 
-    const unsubscribe = doc.subscribeLocalUpdates((event) => {
+    const unsubscribe = doc.subscribe((batch) => {
       console.log("doc event", event);
 
       const v = doc
@@ -46,12 +46,13 @@ export function Editor({ doc }: Props) {
         .toArray()
         .join(" ");
 
-      setVector(v);
+      setVersion(v);
 
-      const bytes = doc.export({ mode: "update", from: last });
-      last = doc.version();
-
-      channel.postMessage(bytes);
+      if (batch.by === "local") {
+        const bytes = doc.export({ mode: "update", from: last });
+        last = doc.version();
+        channel.postMessage(bytes);
+      }
     });
 
     return unsubscribe;
@@ -169,8 +170,11 @@ export function Editor({ doc }: Props) {
 
   return (
     <StrictMode>
-      <div className="h-dvh w-dvw p-4">
-        <div className="flex h-full w-full flex-col gap-4">
+      <div className="h-dvh w-dvw">
+        <div className="h-full w-full">
+          <Canvas doc={doc} version={version ?? ""} />
+        </div>
+        <div className="absolute left-0 right-0 top-0 p-4">
           <div className="flex grow-0 items-center justify-between rounded-xl border-4 border-violet-200/60 bg-white p-2 shadow-sm shadow-violet-800/10">
             <div className="flex items-center gap-2">
               <div className="group relative">
@@ -218,12 +222,12 @@ export function Editor({ doc }: Props) {
                   </a>
                 </li>
                 <li>
-                  {vector && (
+                  {version && (
                     <span
                       className="ml-2 flex items-center text-nowrap rounded-md bg-emerald-200/40 px-2 py-1 text-xs text-emerald-400"
-                      title={vector}
+                      title={version}
                     >
-                      {vector.substring(0, 4)}…
+                      {version.substring(0, 4)}…
                     </span>
                   )}
                 </li>
@@ -243,9 +247,6 @@ export function Editor({ doc }: Props) {
                 </li>
               </ul>
             </div>
-          </div>
-          <div className="grow">
-            <Canvas doc={doc} vector={vector ?? ""} />
           </div>
         </div>
       </div>
