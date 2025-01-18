@@ -173,8 +173,8 @@ export function Editor({ doc }: EditorProps) {
         <div className="h-full w-full">
           <Canvas doc={doc} version={version ?? ""} />
         </div>
-        <div className="absolute left-0 right-0 top-0 p-4">
-          <div className="flex grow-0 items-center justify-between rounded-xl border-4 border-violet-200/60 bg-white p-2 shadow-sm shadow-violet-800/10">
+        <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
+          <div className="flex max-w-4xl grow items-center justify-between rounded-xl border border-stone-200 bg-white p-2">
             <div className="flex items-center gap-2">
               <div className="group relative">
                 <h2 className="text-nowrap px-3 py-2 font-bold text-stone-600 group-hover:text-violet-950">

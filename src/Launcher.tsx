@@ -84,9 +84,9 @@ export function Launcher({ onReady }: LauncherProps) {
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <div className="max-w-prose overflow-y-auto rounded-3xl border-4 border-violet-400/40 bg-white p-12 shadow-lg shadow-purple-800/5">
-        <h2 className="mb-3 bg-gradient-to-r from-purple-700 to-stone-600 bg-clip-text text-5xl font-semibold leading-tight text-transparent">
-          Mind+Map+Live.
+      <div className="-mt-2 max-w-prose overflow-y-auto rounded-3xl border border-violet-200 bg-white px-14 py-12 shadow-2xl shadow-purple-800/5">
+        <h2 className="mb-3 bg-gradient-to-r from-purple-700 to-stone-600 to-70% bg-clip-text text-5xl font-semibold leading-tight text-transparent sm:to-30%">
+          Mind
         </h2>
         <p className="mb-4 text-lg font-extralight text-stone-600">
           Invite friends. Collect ideas and shape them. Together.
@@ -99,7 +99,7 @@ export function Launcher({ onReady }: LauncherProps) {
         <p className="mb-11 text-sm font-extralight leading-snug text-stone-600">
           You can then invite people to collaborate and edit with you. Live.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="mb-1 flex flex-col flex-wrap items-start gap-5 sm:flex-row sm:items-center sm:gap-3">
           <button
             className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-purple-300/30 px-5 py-3 font-normal font-semibold text-purple-600 ring ring-purple-400/50 transition-colors duration-300 hover:bg-purple-500 hover:text-white hover:ring-purple-300"
             type="button"
@@ -108,7 +108,7 @@ export function Launcher({ onReady }: LauncherProps) {
             <SparklesIcon className="-ml-1 size-5" aria-hidden />
             Start from scratch
           </button>
-          <span className="font-light text-stone-400">or</span>
+          <span className="hidden font-light text-stone-400 sm:block">or</span>
           <label
             className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-violet-300/30 px-5 py-3 font-normal font-semibold text-violet-600 ring ring-violet-400/50 transition-colors duration-300 hover:bg-violet-500 hover:text-white hover:ring-violet-300"
             htmlFor="file-input"
@@ -136,12 +136,12 @@ export function Launcher({ onReady }: LauncherProps) {
           "flex",
           "items-center",
           "justify-center",
-          "bg-violet-800/60",
+          "bg-white/60",
           "backdrop-blur",
           !isDragging && "hidden",
         )}
       >
-        <div className="flex items-center gap-2 rounded-full bg-purple-800/40 px-12 py-8 text-4xl font-semibold text-white ring-4 ring-purple-100/90">
+        <div className="flex items-center gap-2 rounded-full bg-violet-500 px-12 py-8 text-4xl font-semibold text-white ring-8 ring-violet-300">
           <ArrowDownTrayIcon className="-ml-1 size-8" aria-hidden />
           Drop to open
         </div>
