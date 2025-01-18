@@ -1,17 +1,16 @@
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
-import type { LoroDoc } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Canvas } from "./Canvas";
 import { download } from "./download";
-import type { Structure } from "./model";
+import type { Doc } from "./model";
 
-export type Props = { doc: LoroDoc<Structure> };
+export type EditorProps = { doc: Doc };
 
-export function Editor({ doc }: Props) {
+export function Editor({ doc }: EditorProps) {
   const channel = useMemo(() => new BroadcastChannel("sync"), []);
 
   useEffect(() => () => channel.close(), [channel]);
