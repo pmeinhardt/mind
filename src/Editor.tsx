@@ -165,6 +165,8 @@ export function Editor({ doc }: EditorProps) {
     setMe(peer);
   }, [doc, setMe]);
 
+  const name = meta.get("name");
+
   // TODO: Add error boundary
 
   return (
@@ -178,15 +180,15 @@ export function Editor({ doc }: EditorProps) {
             <div className="flex items-center gap-2">
               <div className="group relative">
                 <h2 className="text-nowrap px-3 py-2 font-bold text-stone-600 group-hover:text-violet-950">
-                  {meta.get("name")}
+                  {name}
                 </h2>
                 <button
                   className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
                   type="button"
                   onClick={() => {
-                    const name = prompt("New name", meta.get("name"));
-                    if (!isString(name) || name.length === 0) return;
-                    meta.set("name", name);
+                    const n = prompt("New name", name);
+                    if (!isString(n) || n.length === 0) return;
+                    meta.set("name", n);
                     doc.commit();
                   }}
                 >
@@ -205,7 +207,7 @@ export function Editor({ doc }: EditorProps) {
                         frontiers,
                       });
                       const mime = "application/octet-stream";
-                      const filename = `${meta.get("name").toLowerCase()}.mind`;
+                      const filename = `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}.mind`;
                       download([bytes], mime, filename);
                     }}
                   >
