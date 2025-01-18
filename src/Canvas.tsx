@@ -115,14 +115,15 @@ export function Canvas({ doc, version }: CanvasProps) {
                               onSelect={(event) => {
                                 const n = graph.getNodeByID(node.data.id);
 
-                                if (isUndefined(n)) {
+                                if (isUndefined(n) && event.detail === 1) {
                                   const prev = meta.get("name");
                                   const name = prompt("new name", prev);
                                   meta.set("name", name ?? prev);
                                   doc.commit();
+                                  return;
                                 }
 
-                                if (event.detail == 1) {
+                                if (event.detail === 1) {
                                   n.data.set(
                                     "expanded",
                                     !n.data.get("expanded"),
