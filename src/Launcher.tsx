@@ -4,8 +4,8 @@ import clsx from "clsx";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
-import type { Doc } from "./model";
-import { create, read } from "./model";
+import { create, read } from "./model/ops";
+import type { Doc } from "./model/types";
 
 export type LauncherProps = { onReady: (doc: Doc) => void };
 
@@ -33,7 +33,7 @@ export function Launcher({ onReady }: LauncherProps) {
     return () => {
       obsolete = true;
     };
-  }, [file]);
+  }, [file, onReady]);
 
   const onStartFresh = useCallback(() => {
     const doc = create("Ideas");

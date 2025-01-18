@@ -1,21 +1,6 @@
-import type { LoroMap, LoroTree } from "loro-crdt";
 import { LoroDoc } from "loro-crdt";
 
-export type Doc = LoroDoc<Structure>;
-
-export type Structure = {
-  main: LoroTree<Node>;
-  meta: LoroMap<Meta>;
-};
-
-export type Node = {
-  expanded?: boolean;
-  label: string;
-};
-
-export type Meta = {
-  name: string;
-};
+import type { Doc, Structure } from "./types";
 
 export function create(name: string): Doc {
   const doc = new LoroDoc<Structure>();

@@ -2,63 +2,65 @@ import { isString, isUndefined } from "@sindresorhus/is";
 import { Group } from "@visx/group";
 import { hierarchy, Tree } from "@visx/hierarchy";
 import { ParentSize } from "@visx/responsive";
-import { Bar, Circle, LinkHorizontal as LinkComponent } from "@visx/shape";
-import { Text } from "@visx/text";
 import { Zoom } from "@visx/zoom";
 import { clsx } from "clsx";
-import type { LoroDoc, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
+import type { LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
 import { useMemo } from "react";
 
-import type { Node, Structure } from "./model";
+import { Link as CanvasLink } from "./canvas/Link";
+import { Node as CanvasNode } from "./canvas/Node";
+import type { Doc, Node } from "./model/types";
 
-// const strat = stratify().id(({ id }) => id).parentId(({ parent }) => parent);
-
-const g = { id: "root", meta: {} } as const;
+// Virtual root node sitting on top of LoroTree roots.
+const root = { id: "root", meta: {} } as const;
 
 const f = (node: LoroTreeNode<Node>) => ({
   id: node.id,
   meta: node.data.toJSON(),
 });
 
+// Transform LoroTree into D3 hierarchy.
 const h = (tree: LoroTree<Node>) =>
-  hierarchy(g, (d) => {
-    if (d === g) return tree.roots().map(f);
-    const n = tree.getNodeByID(d.id as TreeID);
-    if (!n.data.get("expanded")) return undefined;
-    return n.children()?.map(f);
+  hierarchy(root, (datum) => {
+    if (datum === root) return tree.roots().map(f);
+    const node = tree.getNodeByID(datum.id as TreeID);
+    if (!node.data.get("expanded")) return undefined;
+    return node.children()?.map(f);
   });
 
-export type Props = { doc: LoroDoc<Structure>; vector: string };
+const scale = { min: 0.5, max: 4.0 } as const;
 
-export function Canvas({ doc, vector }: Props) {
+export type CanvasProps = { doc: Doc; version: string };
+
+export function Canvas({ doc, version }: CanvasProps) {
   const graph = useMemo(() => doc.getTree("main"), [doc]);
 
-  // const nodes = useMemo(() => graph.toJSON(), [graph, vector]);
+  // const nodes = useMemo(() => graph.toJSON(), [graph, version]);
   // const data = useMemo(() => strat(nodes), [nodes]);
 
-  const data = useMemo(() => h(graph), [graph, vector]);
-  const meta = useMemo(() => doc.getMap("meta"), [doc, vector]);
+  const data = useMemo(() => h(graph), [graph, version]);
+  const meta = useMemo(() => doc.getMap("meta"), [doc, version]);
 
   return (
     <ParentSize className="h-full w-full bg-white">
       {({ width, height }) => {
-        if (width <= 1 || height <= 1) return null;
+        if (width === 0 && height === 0) return null;
 
         return (
           <Zoom<SVGSVGElement>
             width={width}
             height={height}
-            scaleXMin={0.5}
-            scaleXMax={4}
-            scaleYMin={0.5}
-            scaleYMax={4}
+            scaleXMin={scale.min}
+            scaleXMax={scale.max}
+            scaleYMin={scale.min}
+            scaleYMax={scale.max}
             initialTransformMatrix={{
-              scaleX: 1,
-              scaleY: 1,
-              translateX: 0,
-              translateY: 0,
-              skewX: 0,
-              skewY: 0,
+              scaleX: 1.0,
+              scaleY: 1.0,
+              skewX: 0.0,
+              skewY: 0.0,
+              translateX: width / 2,
+              translateY: height / 2,
             }}
           >
             {(zoom) => (
@@ -75,7 +77,7 @@ export function Canvas({ doc, vector }: Props) {
                   <Group transform={zoom.toString()}>
                     <Tree
                       root={data}
-                      size={[300, data.height * 300]}
+                      size={[data.height * 300, data.height * 200]}
                       separation={(a, b) =>
                         (a.parent === b.parent ? 0.5 : 1) / a.depth
                       }
@@ -83,107 +85,61 @@ export function Canvas({ doc, vector }: Props) {
                       {(tree) => (
                         <Group top={0} left={60}>
                           {tree.links().map((link, key) => (
-                            <LinkComponent
-                              key={key}
-                              data={link}
-                              className="fill-none stroke-violet-400/50 stroke-2"
-                            />
+                            <CanvasLink key={key} data={link} />
                           ))}
 
                           {tree.descendants().map((node, key) => (
-                            <Group
+                            <CanvasNode
                               key={key}
-                              className="group/node"
-                              top={node.x}
-                              left={node.y}
-                            >
-                              <Bar
-                                className={clsx(
-                                  "cursor-pointer",
-                                  "stroke-2",
-                                  node.depth === 0
-                                    ? "stroke-violet-500"
-                                    : node.depth === 1
-                                      ? "stroke-violet-400"
-                                      : "stroke-violet-300",
-                                  node.depth === 0
-                                    ? "fill-violet-500"
-                                    : node.depth === 1
-                                      ? "fill-violet-100"
-                                      : "fill-white",
-                                )}
-                                x={-100 / 2}
-                                y={-32 / 2}
-                                width={100}
-                                height={32}
-                                rx={32 / 2}
-                                onClick={(event) => {
+                              depth={node.depth}
+                              x={node.x}
+                              y={node.y}
+                              onCreateChildNode={
+                                (/* event */) => {
                                   const n = graph.getNodeByID(node.data.id);
+                                  const nn = isUndefined(n)
+                                    ? graph.createNode()
+                                    : n.createNode();
 
-                                  console.log(n);
-                                  if (isUndefined(n)) return;
+                                  const label = prompt("new label");
 
-                                  if (event.detail == 1) {
-                                    n.data.set(
-                                      "expanded",
-                                      !n.data.get("expanded"),
-                                    );
-                                    doc.commit();
-                                  } else {
-                                    const prev = n.data.get("label");
-                                    const label = prompt("new label", prev);
-                                    n.data.set("label", label ?? prev);
-                                    doc.commit();
+                                  if (!isString(label) || label.length === 0) {
+                                    return;
                                   }
-                                }}
-                              />
-                              <Text
-                                textAnchor="middle"
-                                verticalAnchor="middle"
-                                className={clsx(
-                                  "font-sans",
-                                  "font-medium",
-                                  "text-sm",
-                                  "pointer-events-none",
-                                  node.depth === 0
-                                    ? "fill-white"
-                                    : node.depth === 1
-                                      ? "fill-violet-500"
-                                      : "fill-violet-400",
-                                )}
-                              >
-                                {node.depth === 0
-                                  ? meta.get("name")
-                                  : node.data.meta.label}
-                              </Text>
-                              <Circle
-                                className="cursor-pointer fill-emerald-300 opacity-0 group-hover/node:opacity-100"
-                                cx={100 / 2 + 8 / 2 + 6}
-                                cy={0}
-                                r={8}
-                                onClick={
-                                  (/* event */) => {
-                                    const n = graph.getNodeByID(node.data.id);
-                                    const nn = isUndefined(n)
-                                      ? graph.createNode()
-                                      : n.createNode();
 
-                                    const label = prompt("new label");
-
-                                    if (
-                                      !isString(label) ||
-                                      label.length === 0
-                                    ) {
-                                      return;
-                                    }
-
-                                    nn.data.set("label", label);
-                                    nn.data.set("expanded", true);
-                                    doc.commit();
-                                  }
+                                  nn.data.set("label", label);
+                                  nn.data.set("expanded", true);
+                                  doc.commit();
                                 }
-                              />
-                            </Group>
+                              }
+                              onSelect={(event) => {
+                                const n = graph.getNodeByID(node.data.id);
+
+                                if (isUndefined(n)) {
+                                  const prev = meta.get("name");
+                                  const name = prompt("new name", prev);
+                                  meta.set("name", name ?? prev);
+                                  doc.commit();
+                                }
+
+                                if (event.detail == 1) {
+                                  n.data.set(
+                                    "expanded",
+                                    !n.data.get("expanded"),
+                                  );
+                                  doc.commit();
+                                } else {
+                                  const prev = n.data.get("label");
+                                  const label = prompt("new label", prev);
+                                  n.data.set("label", label ?? prev);
+                                  doc.commit();
+                                }
+                              }}
+                            >
+                              {node.depth === 0
+                                ? meta.get("name")
+                                : node.data.meta.label}
+                            </CanvasNode>
                           ))}
                         </Group>
                       )}
