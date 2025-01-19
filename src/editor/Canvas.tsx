@@ -9,7 +9,11 @@ import { useMemo } from "react";
 
 import type { Doc, Node } from "../model/types";
 import { Link as CanvasLink } from "./Link";
-import { Node as CanvasNode } from "./Node";
+import {
+  height as nodeHeight,
+  Node as CanvasNode,
+  width as nodeWidth,
+} from "./Node";
 
 // Virtual root node sitting on top of LoroTree roots.
 const root = { id: "root", meta: {} } as const;
@@ -77,13 +81,14 @@ export function Canvas({ doc, version }: CanvasProps) {
                   <Group transform={zoom.toString()}>
                     <Tree
                       root={data}
-                      size={[data.height * 300, data.height * 200]}
+                      size={[width, height]}
+                      nodeSize={[nodeHeight * 1.5, nodeWidth * 2]}
                       separation={(a, b) =>
-                        (a.parent === b.parent ? 0.5 : 1) / a.depth
+                        (a.parent === b.parent ? 2 : 3) / a.depth
                       }
                     >
                       {(tree) => (
-                        <Group top={0} left={60}>
+                        <Group>
                           {tree.links().map((link, key) => (
                             <CanvasLink key={key} data={link} />
                           ))}
