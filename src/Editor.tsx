@@ -1,11 +1,9 @@
-import { BoltIcon } from "@heroicons/react/24/outline";
-import { isString } from "@sindresorhus/is";
 import type { VersionVector } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { Canvas } from "./Canvas";
-import { download } from "./download";
+import { Bar } from "./editor/Bar";
+import { Canvas } from "./editor/Canvas";
 import type { Doc } from "./model/types";
 
 export type EditorProps = { doc: Doc };
@@ -15,7 +13,7 @@ export function Editor({ doc }: EditorProps) {
 
   useEffect(() => () => channel.close(), [channel]);
 
-  const [version, setVersion] = useState<string>();
+  const [version, setVersion] = useState<string>("");
 
   // Prevent accidentally navigating away and losing changes
 
@@ -68,8 +66,6 @@ export function Editor({ doc }: EditorProps) {
 
     return () => channel.removeEventListener("message", handler);
   }, [doc, channel]);
-
-  const meta = useMemo(() => doc.getMap("meta"), [doc]);
 
   const [, setMe] = useState<Peer>();
 
@@ -163,90 +159,16 @@ export function Editor({ doc }: EditorProps) {
     setMe(peer);
   }, [doc, setMe]);
 
-  const name = meta.get("name");
-
   // TODO: Add error boundary
 
   return (
     <StrictMode>
       <div className="h-dvh w-dvw">
         <div className="h-full w-full">
-          <Canvas doc={doc} version={version ?? ""} />
+          <Canvas doc={doc} version={version} />
         </div>
         <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
-          <div className="flex max-w-4xl grow items-center justify-between rounded-xl border border-stone-200 bg-white p-2">
-            <div className="flex items-center gap-2">
-              <div className="group relative">
-                <h2 className="text-nowrap px-3 py-2 font-bold text-stone-600 group-hover:text-violet-950">
-                  {name}
-                </h2>
-                <button
-                  className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
-                  type="button"
-                  onClick={() => {
-                    const n = prompt("New name", name);
-                    if (!isString(n) || n.length === 0) return;
-                    meta.set("name", n);
-                    doc.commit();
-                  }}
-                >
-                  <span className="sr-only">Edit title</span>
-                </button>
-              </div>
-              <ul className="flex items-center gap-1">
-                <li>
-                  <button
-                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    type="button"
-                    onClick={() => {
-                      const frontiers = doc.oplogFrontiers();
-                      const bytes = doc.export({
-                        mode: "shallow-snapshot",
-                        frontiers,
-                      });
-                      const mime = "application/octet-stream";
-                      const filename = `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}.mind`;
-                      download([bytes], mime, filename);
-                    }}
-                  >
-                    Download
-                  </button>
-                </li>
-                <li>
-                  <a
-                    className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    href="#TODO"
-                  >
-                    Help
-                  </a>
-                </li>
-                <li>
-                  {version && (
-                    <span
-                      className="ml-2 flex items-center text-nowrap rounded-md bg-emerald-200/40 px-2 py-1 text-xs text-emerald-400"
-                      title={version}
-                    >
-                      {version.substring(0, 4)}…
-                    </span>
-                  )}
-                </li>
-              </ul>
-            </div>
-            <div className="flex items-center">
-              <ul className="flex gap-1">
-                <li>
-                  <button
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-                    type="button"
-                    onClick={onCollaborate}
-                  >
-                    Collaborate
-                    <BoltIcon className="-mx-0.5 size-6" aria-hidden />
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <Bar doc={doc} version={version} onCollaborate={onCollaborate} />
         </div>
       </div>
     </StrictMode>

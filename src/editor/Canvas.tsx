@@ -7,9 +7,9 @@ import { clsx } from "clsx";
 import type { LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
 import { useMemo } from "react";
 
-import { Link as CanvasLink } from "./canvas/Link";
-import { Node as CanvasNode } from "./canvas/Node";
-import type { Doc, Node } from "./model/types";
+import type { Doc, Node } from "../model/types";
+import { Link as CanvasLink } from "./Link";
+import { Node as CanvasNode } from "./Node";
 
 // Virtual root node sitting on top of LoroTree roots.
 const root = { id: "root", meta: {} } as const;
