@@ -4,12 +4,12 @@ import { Text } from "@visx/text";
 import { clsx } from "clsx";
 import type { MouseEvent } from "react";
 
-export type EventHandlers = {
+export type NodeEventHandlers = {
   onCreateChildNode: (event: MouseEvent<SVGElement>) => void;
   onSelect: (event: MouseEvent<SVGElement>) => void;
 };
 
-export type Props = EventHandlers & {
+export type NodeProps = NodeEventHandlers & {
   children: string | number | undefined;
   depth: number;
   x: number;
@@ -23,7 +23,7 @@ export function Node({
   y,
   onCreateChildNode,
   onSelect,
-}: Props) {
+}: NodeProps) {
   return (
     <Group className="group/node" top={x} left={y}>
       <Bar
