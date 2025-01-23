@@ -1,3 +1,4 @@
+import { Button } from "@headlessui/react";
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 import { useMemo } from "react";
@@ -21,7 +22,7 @@ export function Bar({ doc, version, onCollaborate }: BarProps) {
           <h2 className="truncate px-3 py-2 font-bold text-stone-600 group-hover:text-violet-950">
             {name}
           </h2>
-          <button
+          <Button
             className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
             type="button"
             onClick={() => {
@@ -32,12 +33,12 @@ export function Bar({ doc, version, onCollaborate }: BarProps) {
             }}
           >
             <span className="sr-only">Edit title</span>
-          </button>
+          </Button>
         </div>
         {/* TODO: Dropdown menu instead of hidden for smaller screens */}
         <ul className="hidden items-center gap-1 sm:flex">
           <li>
-            <button
+            <Button
               className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
               type="button"
               onClick={() => {
@@ -52,15 +53,16 @@ export function Bar({ doc, version, onCollaborate }: BarProps) {
               }}
             >
               Download
-            </button>
+            </Button>
           </li>
           <li>
-            <a
+            <Button
+              as="a"
               className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
               href="#TODO"
             >
               Help
-            </a>
+            </Button>
           </li>
           <li>
             {version && (
@@ -77,14 +79,14 @@ export function Bar({ doc, version, onCollaborate }: BarProps) {
       <div className="flex items-center">
         <ul className="flex gap-1">
           <li>
-            <button
+            <Button
               className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
               type="button"
               onClick={onCollaborate}
             >
               Collaborate
               <BoltIcon className="-mx-0.5 size-6" aria-hidden />
-            </button>
+            </Button>
           </li>
         </ul>
       </div>

@@ -1,3 +1,4 @@
+import { Button } from "@headlessui/react";
 import { DocumentArrowUpIcon, SparklesIcon } from "@heroicons/react/20/solid";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
@@ -100,14 +101,14 @@ export function Launcher({ onReady }: LauncherProps) {
           You can then invite people to collaborate and edit with you. Live.
         </p>
         <div className="mb-1 flex flex-col flex-wrap items-start gap-5 sm:flex-row sm:items-center sm:gap-3">
-          <button
+          <Button
             className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-purple-300/30 px-5 py-3 font-normal font-semibold text-purple-600 ring ring-purple-400/50 transition-colors duration-300 hover:bg-purple-500 hover:text-white hover:ring-purple-300"
             type="button"
             onClick={onStartFresh}
           >
             <SparklesIcon className="-ml-1 size-5" aria-hidden />
             Start from scratch
-          </button>
+          </Button>
           <span className="hidden font-light text-stone-400 sm:block">or</span>
           <label
             className="flex cursor-pointer items-center gap-1 text-nowrap rounded-full bg-violet-300/30 px-5 py-3 font-normal font-semibold text-violet-600 ring ring-violet-400/50 transition-colors duration-300 hover:bg-violet-500 hover:text-white hover:ring-violet-300"
