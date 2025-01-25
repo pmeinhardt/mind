@@ -117,10 +117,10 @@ export function Canvas({ doc, version }: CanvasProps) {
                                   doc.commit();
                                 }
                               }
-                              onSelect={(event) => {
+                              onSelect={() => {
                                 const n = graph.getNodeByID(node.data.id);
 
-                                if (isUndefined(n) && event.detail === 1) {
+                                if (isUndefined(n)) {
                                   const prev = meta.get("name");
                                   const name = prompt("new name", prev);
                                   meta.set("name", name ?? prev);
@@ -128,18 +128,15 @@ export function Canvas({ doc, version }: CanvasProps) {
                                   return;
                                 }
 
-                                if (event.detail === 1) {
-                                  n.data.set(
-                                    "expanded",
-                                    !n.data.get("expanded"),
-                                  );
-                                  doc.commit();
-                                } else {
-                                  const prev = n.data.get("label");
-                                  const label = prompt("new label", prev);
-                                  n.data.set("label", label ?? prev);
-                                  doc.commit();
-                                }
+                                const prev = n.data.get("label");
+                                const label = prompt("new label", prev);
+                                n.data.set("label", label ?? prev);
+                                doc.commit();
+                              }}
+                              onToggle={() => {
+                                const n = graph.getNodeByID(node.data.id);
+                                n.data.set("expanded", !n.data.get("expanded"));
+                                doc.commit();
                               }}
                             >
                               {node.depth === 0

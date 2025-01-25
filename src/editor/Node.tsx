@@ -10,7 +10,8 @@ export const height = 48;
 
 export type NodeEventHandlers = {
   onCreateChildNode: (event: MouseEvent<SVGElement>) => void;
-  onSelect: (event: MouseEvent<SVGElement>) => void;
+  onSelect: () => void;
+  onToggle: () => void;
 };
 
 export type NodeProps = NodeEventHandlers & {
@@ -27,12 +28,14 @@ export function Node({
   y,
   onCreateChildNode,
   onSelect,
+  onToggle,
 }: NodeProps) {
   return (
     <Group className="group/node" top={x} left={y}>
       <Bar
         className={clsx(
           "cursor-pointer",
+          "rounded-full",
           "stroke-2",
           depth === 0
             ? "stroke-violet-500"
@@ -50,7 +53,14 @@ export function Node({
         width={width}
         height={height}
         rx={height / 2}
-        onClick={onSelect}
+        onClick={(event) => (event.detail !== 1 ? onToggle() : onSelect())}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") onToggle();
+          else if (event.key === " ") onSelect();
+          else if (event.key === "Escape") event.target.blur();
+        }}
+        tabIndex={0}
+        focusable
       />
       <Text
         textAnchor="middle"
