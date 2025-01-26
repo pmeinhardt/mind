@@ -1,13 +1,26 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-import { Editor } from "./Editor";
-import { Launcher } from "./Launcher";
+import { Edit } from "./Edit";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { ErrorFallback } from "./ErrorFallback";
+import { Home } from "./Home";
+import { Loading } from "./Loading";
 import type { Doc } from "./model/types";
 
 export type ApplicationProps = Record<string, never>;
 
 export function Application(_: ApplicationProps) {
-  const [doc, setDoc] = useState<Doc>();
-  if (doc) return <Editor doc={doc} />;
-  return <Launcher onReady={setDoc} />;
+  const [promise, init] = useState<Promise<Doc> | null>(null);
+
+  return (
+    <ErrorBoundary fallback={ErrorFallback}>
+      {promise ? (
+        <Suspense fallback={<Loading />}>
+          <Edit promise={promise} />
+        </Suspense>
+      ) : (
+        <Home init={init} />
+      )}
+    </ErrorBoundary>
+  );
 }
