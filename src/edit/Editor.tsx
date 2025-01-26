@@ -2,9 +2,9 @@ import type { VersionVector } from "loro-crdt";
 import { Peer } from "peerjs";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { Bar } from "./editor/Bar";
-import { Canvas } from "./editor/Canvas";
-import type { Doc } from "./model/types";
+import type { Doc } from "../model/types";
+import { Bar } from "./Bar";
+import { Canvas } from "./Canvas";
 
 export type EditorProps = { doc: Doc };
 

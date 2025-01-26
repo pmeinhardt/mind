@@ -8,38 +8,25 @@ import { useCallback, useEffect, useState } from "react";
 import { create, read } from "./model/ops";
 import type { Doc } from "./model/types";
 
-export type LauncherProps = { onReady: (doc: Doc) => void };
+export type HomeProps = { init: (doc: Promise<Doc>) => void };
 
-export function Launcher({ onReady }: LauncherProps) {
+export function Home({ init }: HomeProps) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [file, setFile] = useState<File>();
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
-    let obsolete = false;
-
-    (async () => {
-      if (file) {
-        try {
-          const doc = await read(file);
-          if (obsolete) return;
-          onReady(doc);
-        } catch (error) {
-          if (obsolete) return;
-          console.error(error);
-          alert(error?.toString()); // TODO: Improve user feedback
-        }
-      }
-    })();
-
-    return () => {
-      obsolete = true;
-    };
-  }, [file, onReady]);
+    if (files.length > 0) {
+      const file = files[0]; // we expect at most one file, any additional files will be ignored
+      const promise = read(file);
+      init(promise);
+    }
+  }, [files, init]);
 
   const onStartFresh = useCallback(() => {
-    const doc = create("Ideas");
-    onReady(doc);
-  }, [onReady]);
+    const doc = create("Ideas"); // create a new, empty document
+    const promise = Promise.resolve(doc);
+    init(promise);
+  }, [init]);
 
   const onDragOver = useCallback(
     (event: DragEvent) => {
@@ -63,24 +50,23 @@ export function Launcher({ onReady }: LauncherProps) {
     (event: DragEvent) => {
       event.stopPropagation();
       event.preventDefault();
-      const files = Array.from(event.dataTransfer.files ?? []);
-      setFile(files[0]); // we expect at most one file, any additional files will be ignored
+      setFiles(Array.from(event.dataTransfer.files ?? []));
       setIsDragging(false);
     },
-    [setFile, setIsDragging],
+    [setFiles, setIsDragging],
   );
 
   const onFile = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target?.files ?? []);
-      setFile(files[0]); // we expect at most one file, any additional files will be ignored
+      setFiles(files);
     },
-    [setFile],
+    [setFiles],
   );
 
   return (
     <div
-      className="flex h-dvh w-dvw items-center justify-center p-6"
+      className="flex min-h-dvh items-center justify-center px-6 py-8"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
