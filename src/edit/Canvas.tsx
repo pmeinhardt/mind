@@ -5,7 +5,6 @@ import { ParentSize } from "@visx/responsive";
 import { Zoom } from "@visx/zoom";
 import { clsx } from "clsx";
 import type { LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
-import { useMemo } from "react";
 
 import type { Doc, Node } from "../model/types";
 import { Link as CanvasLink } from "./Link";
@@ -34,16 +33,13 @@ const h = (tree: LoroTree<Node>) =>
 
 const scale = { min: 0.5, max: 4.0 } as const;
 
-export type CanvasProps = { doc: Doc; version: string };
+export type CanvasProps = { doc: Doc };
 
-export function Canvas({ doc, version }: CanvasProps) {
-  const graph = useMemo(() => doc.getTree("main"), [doc]);
+export function Canvas({ doc }: CanvasProps) {
+  const graph = doc.getTree("main");
+  const meta = doc.getMap("meta");
 
-  // const nodes = useMemo(() => graph.toJSON(), [graph, version]);
-  // const data = useMemo(() => strat(nodes), [nodes]);
-
-  const data = useMemo(() => h(graph), [graph, version]);
-  const meta = useMemo(() => doc.getMap("meta"), [doc, version]);
+  const data = h(graph);
 
   return (
     <ParentSize className="h-full w-full bg-white">
