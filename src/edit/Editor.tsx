@@ -5,6 +5,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import type { Doc } from "../model/types";
 import { Bar } from "./Bar";
 import { Canvas } from "./Canvas";
+import { useConfirmNavigation } from "./useConfirmNavigation";
 
 export type EditorProps = { doc: Doc };
 
@@ -13,17 +14,7 @@ export function Editor({ doc }: EditorProps) {
 
   useEffect(() => () => channel.close(), [channel]);
 
-  // Prevent accidentally navigating away and losing changes
-
-  useEffect(() => {
-    const handler = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-
-    window.addEventListener("beforeunload", handler);
-
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  useConfirmNavigation(true);
 
   // Send updates to peers
 
