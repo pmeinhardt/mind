@@ -13,8 +13,6 @@ export function Editor({ doc }: EditorProps) {
 
   useEffect(() => () => channel.close(), [channel]);
 
-  const [version, setVersion] = useState<string>("");
-
   // Prevent accidentally navigating away and losing changes
 
   useEffect(() => {
@@ -28,6 +26,8 @@ export function Editor({ doc }: EditorProps) {
   }, []);
 
   // Send updates to peers
+
+  const [, setVersion] = useState<string>("");
 
   useEffect(() => {
     let last: VersionVector | undefined = undefined;
@@ -165,10 +165,10 @@ export function Editor({ doc }: EditorProps) {
     <StrictMode>
       <div className="h-dvh w-dvw">
         <div className="h-full w-full">
-          <Canvas doc={doc} version={version} />
+          <Canvas doc={doc} />
         </div>
         <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
-          <Bar doc={doc} version={version} onCollaborate={onCollaborate} />
+          <Bar doc={doc} onCollaborate={onCollaborate} />
         </div>
       </div>
     </StrictMode>

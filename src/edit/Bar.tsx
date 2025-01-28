@@ -1,18 +1,16 @@
 import { Button } from "@headlessui/react";
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
-import { useMemo } from "react";
 
 import { download } from "../download";
 import type { Doc } from "../model/types";
 
 export type BarEventHandlers = { onCollaborate: () => void };
 
-export type BarProps = BarEventHandlers & { doc: Doc; version: string };
+export type BarProps = BarEventHandlers & { doc: Doc };
 
-export function Bar({ doc, version, onCollaborate }: BarProps) {
-  const meta = useMemo(() => doc.getMap("meta"), [doc]);
-
+export function Bar({ doc, onCollaborate }: BarProps) {
+  const meta = doc.getMap("meta");
   const name = meta.get("name");
 
   return (
@@ -65,14 +63,14 @@ export function Bar({ doc, version, onCollaborate }: BarProps) {
             </Button>
           </li>
           <li>
-            {version && (
-              <span
-                className="ml-2 flex items-center text-nowrap rounded-md bg-emerald-200/40 px-2 py-1 text-xs text-emerald-400"
-                title={version}
-              >
-                {version.substring(0, 4)}…
-              </span>
-            )}
+            {/* {version && ( */}
+            {/*   <span */}
+            {/*     className="ml-2 flex items-center text-nowrap rounded-md bg-emerald-200/40 px-2 py-1 text-xs text-emerald-400" */}
+            {/*     title={version} */}
+            {/*   > */}
+            {/*     {version.substring(0, 4)}… */}
+            {/*   </span> */}
+            {/* )} */}
           </li>
         </ul>
       </div>
