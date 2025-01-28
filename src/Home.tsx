@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { create, read } from "./model/ops";
 import type { Doc } from "./model/types";
 
-export type HomeProps = { init: (doc: Promise<Doc>) => void };
+export type HomeProps = { init: (promise: Promise<Doc>) => void };
 
 export function Home({ init }: HomeProps) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
