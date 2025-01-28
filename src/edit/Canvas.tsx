@@ -17,17 +17,24 @@ import {
 // Virtual root node sitting on top of LoroTree roots.
 const root = { id: "root", meta: {} } as const;
 
-const f = (node: LoroTreeNode<Node>) => ({
+type RootNode = typeof root;
+type ItemNode = { id: TreeID; meta: Node };
+
+const f = (node: LoroTreeNode<Node>): ItemNode => ({
   id: node.id,
   meta: node.data.toJSON(),
 });
 
 // Transform LoroTree into D3 hierarchy.
 const h = (tree: LoroTree<Node>) =>
-  hierarchy(root, (datum) => {
-    if (datum === root) return tree.roots().map(f);
+  hierarchy<RootNode | ItemNode>(root, (datum) => {
+    if (datum === root) {
+      return (tree.roots() as LoroTreeNode<Node>[]).map(f);
+    }
+
     const node = tree.getNodeByID(datum.id as TreeID);
     if (!node.data.get("expanded")) return undefined;
+
     return node.children()?.map(f);
   });
 
