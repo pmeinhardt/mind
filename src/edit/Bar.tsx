@@ -5,6 +5,10 @@ import { isString } from "@sindresorhus/is";
 import { download } from "../download";
 import type { Doc } from "../model/types";
 
+function sanitize(name: string): string {
+  return `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}`;
+}
+
 export type BarEventHandlers = { onCollaborate: () => void };
 
 export type BarProps = BarEventHandlers & { doc: Doc };
@@ -46,13 +50,28 @@ export function Bar({ doc, onCollaborate }: BarProps) {
                   frontiers,
                 });
                 const mime = "application/octet-stream";
-                const filename = `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}.mind`;
+                const filename = `${sanitize(name)}.mind`;
                 download([bytes], mime, filename);
               }}
             >
-              Download
+              Save
             </Button>
           </li>
+          {/* TODO: Export JSON and Markdown */}
+          {/* <li> */}
+          {/*   <Button */}
+          {/*     className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600" */}
+          {/*     type="button" */}
+          {/*     onClick={() => { */}
+          {/*       const bytes = JSON.stringify(doc.toJSON()); */}
+          {/*       const mime = "application/json"; */}
+          {/*       const filename = `${sanitize(name)}.json`; */}
+          {/*       download([bytes], mime, filename); */}
+          {/*     }} */}
+          {/*   > */}
+          {/*     Export JSON */}
+          {/*   </Button> */}
+          {/* </li> */}
           <li>
             <Button
               as="a"
