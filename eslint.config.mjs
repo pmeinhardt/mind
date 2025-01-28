@@ -1,3 +1,7 @@
+import path from "node:path";
+import url from "node:url";
+
+import { includeIgnoreFile as ignore } from "@eslint/compat";
 import javascript from "@eslint/js";
 import jest from "eslint-plugin-jest";
 import jsxa11y from "eslint-plugin-jsx-a11y";
@@ -8,19 +12,12 @@ import imports from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import typescript, { config } from "typescript-eslint";
 
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const gitignore = path.resolve(__dirname, ".gitignore");
+
 export default config(
-  // Includes
-
-  {
-    files: ["**/*.{js,jsx,mjs,ts,tsx}"],
-  },
-
-  // Ignores
-
-  {
-    ignores: ["dist"],
-  },
-
   // Language options
 
   {
@@ -28,6 +25,16 @@ export default config(
       globals: globals.browser,
     },
   },
+
+  // Includes
+
+  {
+    files: ["**/*.{js,jsx,mjs,ts,tsx}"],
+  },
+
+  // Ignores (from .gitignore)
+
+  ignore(gitignore),
 
   // JavaScript (https://github.com/eslint/eslint/tree/main/packages/js)
 
