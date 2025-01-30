@@ -1,6 +1,6 @@
 import type { VersionVector } from "loro-crdt";
 import { Peer } from "peerjs";
-import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { Doc } from "../model/types";
 import { Bar } from "./Bar";
@@ -10,10 +10,6 @@ import { useConfirmNavigation } from "./useConfirmNavigation";
 export type EditorProps = { doc: Doc };
 
 export function Editor({ doc }: EditorProps) {
-  const channel = useMemo(() => new BroadcastChannel("sync"), []);
-
-  useEffect(() => () => channel.close(), [channel]);
-
   useConfirmNavigation(true);
 
   // Send updates to peers
@@ -24,8 +20,6 @@ export function Editor({ doc }: EditorProps) {
     let last: VersionVector | undefined = undefined;
 
     const unsubscribe = doc.subscribe((batch) => {
-      console.log("doc event", event);
-
       const vector = doc.version().toJSON();
 
       const v = Array.from(vector.entries())
@@ -37,26 +31,26 @@ export function Editor({ doc }: EditorProps) {
       if (batch.by === "local") {
         const bytes = doc.export({ mode: "update", from: last });
         last = doc.version();
-        channel.postMessage(bytes);
+        // channel.postMessage(bytes);
       }
     });
 
     return unsubscribe;
-  }, [doc, channel]);
+  }, [doc]);
 
   // Receive updates from peers
 
-  useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      console.log("channel event", event);
-      const bytes = new Uint8Array(event.data);
-      doc.import(bytes);
-    };
+  // useEffect(() => {
+  //   const handler = (event: MessageEvent) => {
+  //     console.log("channel event", event);
+  //     const bytes = new Uint8Array(event.data);
+  //     doc.import(bytes);
+  //   };
 
-    channel.addEventListener("message", handler);
+  //   channel.addEventListener("message", handler);
 
-    return () => channel.removeEventListener("message", handler);
-  }, [doc, channel]);
+  //   return () => channel.removeEventListener("message", handler);
+  // }, [doc, channel]);
 
   const [, setMe] = useState<Peer>();
 
@@ -153,15 +147,13 @@ export function Editor({ doc }: EditorProps) {
   // TODO: Add error boundary
 
   return (
-    <StrictMode>
-      <div className="h-dvh w-dvw">
-        <div className="h-full w-full">
-          <Canvas doc={doc} />
-        </div>
-        <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
-          <Bar doc={doc} onCollaborate={onCollaborate} />
-        </div>
+    <div className="h-dvh w-dvw">
+      <div className="h-full w-full">
+        <Canvas doc={doc} />
       </div>
-    </StrictMode>
+      <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
+        <Bar doc={doc} onCollaborate={onCollaborate} />
+      </div>
+    </div>
   );
 }
