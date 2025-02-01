@@ -13,5 +13,6 @@ export type Node = {
 };
 
 export type Meta = {
+  expanded?: boolean;
   name: string;
 };

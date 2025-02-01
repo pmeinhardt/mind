@@ -4,9 +4,10 @@ import { hierarchy, Tree } from "@visx/hierarchy";
 import { ParentSize } from "@visx/responsive";
 import { Zoom } from "@visx/zoom";
 import { clsx } from "clsx";
-import type { LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
+import type { LoroMap, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
+import { useState } from "react";
 
-import type { Doc, Node } from "../model/types";
+import type { Doc, Meta, Node } from "../model/types";
 import { Link as CanvasLink } from "./Link";
 import {
   height as nodeHeight,
@@ -20,20 +21,23 @@ const root = { id: "root", meta: {} } as const;
 type RootNode = typeof root;
 type ItemNode = { id: TreeID; meta: Node };
 
+type NodeId = ItemNode["id"] | RootNode["id"];
+
 const f = (node: LoroTreeNode<Node>): ItemNode => ({
   id: node.id,
   meta: node.data.toJSON(),
 });
 
 // Transform LoroTree into D3 hierarchy.
-const h = (tree: LoroTree<Node>) =>
+const h = (tree: LoroTree<Node>, meta: LoroMap<Meta>) =>
   hierarchy<RootNode | ItemNode>(root, (datum) => {
     if (datum === root) {
+      if (meta.get("expanded") === false) return undefined;
       return (tree.roots() as LoroTreeNode<Node>[]).map(f);
     }
 
     const node = tree.getNodeByID(datum.id as TreeID);
-    if (!node.data.get("expanded")) return undefined;
+    if (node.data.get("expanded") === false) return undefined;
 
     return node.children()?.map(f);
   });
@@ -46,7 +50,104 @@ export function Canvas({ doc }: CanvasProps) {
   const graph = doc.getTree("main");
   const meta = doc.getMap("meta");
 
-  const data = h(graph);
+  const data = h(graph, meta);
+
+  const [focusNodeId, setFocusNodeId] = useState<NodeId>();
+
+  const onNodeToggle = (id: NodeId) => {
+    if (id === root.id) {
+      meta.set("expanded", meta.get("expanded") === false);
+      doc.commit();
+    } else {
+      const node = graph.getNodeByID(id);
+      node.data.set("expanded", node.data.get("expanded") === false);
+      doc.commit();
+    }
+  };
+
+  const onNodeSelect = (id: NodeId) => {
+    if (id === root.id) {
+      const prev = meta.get("name");
+      const name = prompt("new name", prev);
+      meta.set("name", name ?? prev);
+      doc.commit();
+    } else {
+      const node = graph.getNodeByID(id);
+      const prev = node.data.get("label");
+      const label = prompt("new label", prev);
+      node.data.set("label", label ?? prev);
+      doc.commit();
+    }
+  };
+
+  const onNodeUp = (id: NodeId) => {
+    if (id !== root.id) {
+      const node = graph.getNodeByID(id);
+
+      const parent = node.parent() ?? root;
+      if (!parent) return;
+
+      setFocusNodeId(parent.id);
+    }
+  };
+
+  const onNodeDown = (id: NodeId) => {
+    if (id !== root.id) {
+      const node = graph.getNodeByID(id);
+
+      const children = node.children();
+      if (!children) return;
+
+      const child = children[Math.floor((children.length - 1) / 2)];
+      if (!child) return;
+
+      if (!node.data.get("expanded")) onNodeToggle(node.id);
+
+      setFocusNodeId(child.id);
+    } else {
+      const children = graph.roots();
+      if (!children) return;
+
+      const child = children[Math.floor((children.length - 1) / 2)];
+      if (!child) return;
+
+      setFocusNodeId(child.id);
+    }
+  };
+
+  const onNodePrev = (id: NodeId) => {
+    if (id !== root.id) {
+      const node = graph.getNodeByID(id);
+
+      const index = node.index();
+      if (typeof index === "undefined") return;
+
+      if (index === 0) return; // TODO: Jump via parent?
+
+      const siblings = node.parent()?.children() ?? graph.roots();
+      if (!siblings) return;
+
+      const left = siblings[index - 1];
+      setFocusNodeId(left.id);
+    }
+  };
+
+  const onNodeNext = (id: NodeId) => {
+    if (id !== root.id) {
+      const node = graph.getNodeByID(id);
+
+      const index = node.index();
+      if (typeof index === "undefined") return;
+
+      const siblings = node.parent()?.children() ?? graph.roots();
+      if (!siblings) return;
+
+      if (index >= siblings.length - 1) return; // TODO: Jump via parent?
+
+      const right = siblings[index + 1];
+      setFocusNodeId(right.id);
+    }
+  };
 
   return (
     <ParentSize className="h-full w-full bg-white">
@@ -100,8 +201,41 @@ export function Canvas({ doc }: CanvasProps) {
                             <CanvasNode
                               key={key}
                               depth={node.depth}
+                              focused={node.data.id === focusNodeId}
                               x={node.x}
                               y={node.y}
+                              onFocus={
+                                (/* event */) => {
+                                  setFocusNodeId(node.data.id);
+                                }
+                              }
+                              onBlur={
+                                (/* event */) => {
+                                  setFocusNodeId(undefined);
+                                }
+                              }
+                              onClick={(event) =>
+                                event.detail !== 1
+                                  ? onNodeToggle(node.data.id)
+                                  : onNodeSelect(node.data.id)
+                              }
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  onNodeToggle(node.data.id);
+                                } else if (event.key === " ") {
+                                  onNodeSelect(node.data.id);
+                                } else if (event.key === "Escape") {
+                                  event.target.blur();
+                                } else if (event.key === "ArrowUp") {
+                                  onNodePrev(node.data.id);
+                                } else if (event.key === "ArrowDown") {
+                                  onNodeNext(node.data.id);
+                                } else if (event.key === "ArrowLeft") {
+                                  onNodeUp(node.data.id);
+                                } else if (event.key === "ArrowRight") {
+                                  onNodeDown(node.data.id);
+                                }
+                              }}
                               onCreateChildNode={
                                 (/* event */) => {
                                   const n = graph.getNodeByID(node.data.id);
@@ -120,27 +254,6 @@ export function Canvas({ doc }: CanvasProps) {
                                   doc.commit();
                                 }
                               }
-                              onSelect={() => {
-                                const n = graph.getNodeByID(node.data.id);
-
-                                if (isUndefined(n)) {
-                                  const prev = meta.get("name");
-                                  const name = prompt("new name", prev);
-                                  meta.set("name", name ?? prev);
-                                  doc.commit();
-                                  return;
-                                }
-
-                                const prev = n.data.get("label");
-                                const label = prompt("new label", prev);
-                                n.data.set("label", label ?? prev);
-                                doc.commit();
-                              }}
-                              onToggle={() => {
-                                const n = graph.getNodeByID(node.data.id);
-                                n.data.set("expanded", !n.data.get("expanded"));
-                                doc.commit();
-                              }}
                             >
                               {node.depth === 0
                                 ? meta.get("name")

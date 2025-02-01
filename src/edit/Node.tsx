@@ -2,21 +2,29 @@ import { Group } from "@visx/group";
 import { Bar, Circle } from "@visx/shape";
 import { Text } from "@visx/text";
 import { clsx } from "clsx";
-import type { MouseEvent } from "react";
+import type {
+  FocusEventHandler,
+  KeyboardEventHandler,
+  MouseEventHandler,
+} from "react";
+import { useEffect, useRef } from "react";
 
 export const width = 140;
 
 export const height = 48;
 
 export type NodeEventHandlers = {
-  onCreateChildNode: (event: MouseEvent<SVGElement>) => void;
-  onSelect: () => void;
-  onToggle: () => void;
+  onBlur: FocusEventHandler<SVGElement>;
+  onClick: MouseEventHandler<SVGElement>;
+  onCreateChildNode: MouseEventHandler<SVGElement>;
+  onFocus: FocusEventHandler<SVGElement>;
+  onKeyDown: KeyboardEventHandler<SVGElement>;
 };
 
 export type NodeProps = NodeEventHandlers & {
   children: string | number | undefined;
   depth: number;
+  focused: boolean;
   x: number;
   y: number;
 };
@@ -24,15 +32,25 @@ export type NodeProps = NodeEventHandlers & {
 export function Node({
   children,
   depth,
+  focused = false,
   x,
   y,
+  onBlur,
+  onClick,
   onCreateChildNode,
-  onSelect,
-  onToggle,
+  onFocus,
+  onKeyDown,
 }: NodeProps) {
+  const ref = useRef<SVGRectElement>(null);
+
+  useEffect(() => {
+    if (focused) ref.current?.focus();
+  }, [focused]);
+
   return (
     <Group className="group/node" top={x} left={y}>
       <Bar
+        ref={ref}
         className={clsx(
           "cursor-pointer",
           "rounded-full",
@@ -53,12 +71,10 @@ export function Node({
         width={width}
         height={height}
         rx={height / 2}
-        onClick={(event) => (event.detail !== 1 ? onToggle() : onSelect())}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") onToggle();
-          else if (event.key === " ") onSelect();
-          else if (event.key === "Escape") event.target.blur();
-        }}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onClick={onClick}
+        onKeyDown={onKeyDown}
         tabIndex={0}
         focusable
       />
