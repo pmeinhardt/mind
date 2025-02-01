@@ -8,6 +8,7 @@ import jsxa11y from "eslint-plugin-jsx-a11y";
 import prettier from "eslint-plugin-prettier/recommended";
 import react from "eslint-plugin-react";
 import hooks from "eslint-plugin-react-hooks";
+import refresh from "eslint-plugin-react-refresh";
 import imports from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import typescript, { config } from "typescript-eslint";
@@ -18,70 +19,30 @@ const __dirname = path.dirname(__filename);
 const gitignore = path.resolve(__dirname, ".gitignore");
 
 export default config(
-  // Language options
+  // Globally ignore files based on `.gitignore`
+
+  ignore(gitignore),
+
+  // Configure common language options
 
   {
+    files: ["*.{js,mjs}"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
+  {
+    files: ["src/**/*.{js,jsx,mjs,ts,tsx}"],
     languageOptions: {
       globals: globals.browser,
     },
   },
 
-  // Includes
-
-  {
-    files: ["**/*.{js,jsx,mjs,ts,tsx}"],
-  },
-
-  // Ignores (from .gitignore)
-
-  ignore(gitignore),
-
-  // JavaScript (https://github.com/eslint/eslint/tree/main/packages/js)
-
-  javascript.configs.recommended,
-
-  // TypeScript (https://github.com/typescript-eslint/typescript-eslint)
-
-  typescript.configs.recommended,
-  {
-    files: ["**/*.{ts,tsx}"],
-    rules: {
-      "@typescript-eslint/consistent-type-imports": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
-      ],
-    },
-  },
-
-  // React (https://github.com/jsx-eslint/eslint-plugin-react)
-
-  {
-    settings: {
-      react: {
-        version: "detect",
-      },
-    },
-  },
-  react.configs.flat.recommended,
-  react.configs.flat["jsx-runtime"],
-
-  // React hooks (https://github.com/facebook/react/tree/main/packages/eslint-plugin-react-hooks)
-
-  {
-    ...hooks.configs.recommended,
-    plugins: {
-      "react-hooks": hooks,
-    },
-  },
-
-  // React accessibility (https://github.com/jsx-eslint/eslint-plugin-jsx-a11y)
-
-  jsxa11y.flatConfigs.recommended,
-
   // Imports (https://github.com/lydell/eslint-plugin-simple-import-sort)
 
   {
+    files: ["**/*.{js,jsx,mjs,ts,tsx}"],
     plugins: {
       "simple-import-sort": imports,
     },
@@ -91,18 +52,55 @@ export default config(
     },
   },
 
+  // JavaScript (https://github.com/eslint/eslint/tree/main/packages/js)
+
+  {
+    files: ["**/*.{js,jsx,mjs}"],
+    ...javascript.configs.recommended,
+  },
+
+  // TypeScript (https://github.com/typescript-eslint/typescript-eslint)
+
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [...typescript.configs.recommended],
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_" },
+      ],
+    },
+  },
+
+  // React
+
+  {
+    extends: [
+      react.configs.flat.recommended,
+      react.configs.flat["jsx-runtime"],
+      jsxa11y.flatConfigs.recommended,
+      refresh.configs.vite,
+    ],
+    files: ["**/*.{jsx,tsx}"],
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    plugins: {
+      "react-hooks": hooks,
+    },
+    rules: {
+      ...hooks.configs.recommended.rules,
+    },
+  },
+
   // Jest (https://github.com/jest-community/eslint-plugin-jest)
 
   {
-    ...jest.configs["flat/recommended"],
     files: ["**/*.test.{js,jsx,mjs,ts,tsx}"],
-  },
-
-  // Tailwind CSS config
-
-  {
-    files: ["tailwind.config.js"],
-    languageOptions: { sourceType: "commonjs" },
+    ...jest.configs["flat/recommended"],
   },
 
   // Prettier (https://github.com/prettier/eslint-plugin-prettier)
