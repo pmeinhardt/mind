@@ -3,7 +3,7 @@ import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 
 import { download } from "../browser-utils/download";
-import { shallow } from "../export";
+import { markdown, shallow } from "../export";
 import type { Doc } from "../model";
 
 function sanitize(name: string): string {
@@ -55,21 +55,21 @@ export function Bar({ doc, onCollaborate }: BarProps) {
               Save
             </Button>
           </li>
-          {/* TODO: Export JSON and Markdown */}
-          {/* <li> */}
-          {/*   <Button */}
-          {/*     className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600" */}
-          {/*     type="button" */}
-          {/*     onClick={() => { */}
-          {/*       const bytes = JSON.stringify(doc.toJSON()); */}
-          {/*       const mime = "application/json"; */}
-          {/*       const filename = `${sanitize(name)}.json`; */}
-          {/*       download([bytes], mime, filename); */}
-          {/*     }} */}
-          {/*   > */}
-          {/*     Export JSON */}
-          {/*   </Button> */}
-          {/* </li> */}
+          {/* TODO: Export JSON */}
+          <li>
+            <Button
+              className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+              type="button"
+              onClick={() => {
+                const data = markdown(doc);
+                const mime = "text/markdown";
+                const filename = `${sanitize(name)}.md`;
+                download(mime, filename, data);
+              }}
+            >
+              Export Markdown
+            </Button>
+          </li>
           <li>
             <Button
               as="a"
