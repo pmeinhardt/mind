@@ -5,8 +5,7 @@ import clsx from "clsx";
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
-import { create, read } from "./model/ops";
-import type { Doc } from "./model/types";
+import { Doc } from "./model";
 
 export type HomeProps = { init: (promise: Promise<Doc>) => void };
 
@@ -17,13 +16,14 @@ export function Home({ init }: HomeProps) {
   useEffect(() => {
     if (files.length > 0) {
       const file = files[0]; // we expect at most one file, any additional files will be ignored
-      const promise = read(file);
+      const promise = Doc.read(file);
       init(promise);
     }
   }, [files, init]);
 
   const onStartFresh = useCallback(() => {
-    const doc = create("Ideas"); // create a new, empty document
+    const doc = new Doc(); // create a new, empty document
+    doc.meta.set("name", "Ideas");
     const promise = Promise.resolve(doc);
     init(promise);
   }, [init]);

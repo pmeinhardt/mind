@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`markdown 1`] = `
+"# Fruits
+
+- Apple
+    - Boskoop
+    - Carola
+    - Elstar
+- Banana
+    - Goldfinger
+    - Gros Michel
+- Clementine"
+`;

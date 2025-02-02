@@ -7,7 +7,7 @@ import { clsx } from "clsx";
 import type { LoroMap, LoroTree, LoroTreeNode, TreeID } from "loro-crdt";
 import { useState } from "react";
 
-import type { Doc, Meta, Node } from "../model/types";
+import type { Doc, Meta, Node } from "../model";
 import { Link as CanvasLink } from "./Link";
 import {
   height as nodeHeight,
@@ -52,10 +52,9 @@ const scale = { min: 0.5, max: 4.0 } as const;
 export type CanvasProps = { doc: Doc };
 
 export function Canvas({ doc }: CanvasProps) {
-  const graph = doc.getTree("main");
-  const meta = doc.getMap("meta");
+  const { main, meta } = doc;
 
-  const data = h(graph, meta);
+  const data = h(main, meta);
 
   const [focusNodeId, setFocusNodeId] = useState<NodeId>();
 
@@ -64,7 +63,7 @@ export function Canvas({ doc }: CanvasProps) {
       meta.set("expanded", meta.get("expanded") === false);
       doc.commit();
     } else {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
       node.data.set("expanded", node.data.get("expanded") === false);
       doc.commit();
     }
@@ -72,10 +71,10 @@ export function Canvas({ doc }: CanvasProps) {
 
   const onAddNode = (id: NodeId) => {
     if (id !== root.id) {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
       const parent = node.parent();
       const index = node.index() ?? 0;
-      const next = graph.createNode(parent?.id, index + 1);
+      const next = main.createNode(parent?.id, index + 1);
       doc.commit();
       setFocusNodeId(next.id);
     }
@@ -88,7 +87,7 @@ export function Canvas({ doc }: CanvasProps) {
       meta.set("name", name ?? prev);
       doc.commit();
     } else {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
       const prev = node.data.get("label");
       const label = prompt("new label", prev);
       node.data.set("label", label ?? prev);
@@ -98,7 +97,7 @@ export function Canvas({ doc }: CanvasProps) {
 
   const onNodeUp = (id: NodeId) => {
     if (id !== root.id) {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
 
       const parent = node.parent() ?? root;
       if (!parent) return;
@@ -109,7 +108,7 @@ export function Canvas({ doc }: CanvasProps) {
 
   const onNodeDown = (id: NodeId) => {
     if (id !== root.id) {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
 
       const children = node.children();
       if (!children) return;
@@ -121,7 +120,7 @@ export function Canvas({ doc }: CanvasProps) {
 
       setFocusNodeId(child.id);
     } else {
-      const children = graph.roots();
+      const children = main.roots();
       if (!children) return;
 
       const child = children[Math.floor((children.length - 1) / 2)];
@@ -133,14 +132,14 @@ export function Canvas({ doc }: CanvasProps) {
 
   const onNodePrev = (id: NodeId) => {
     if (id !== root.id) {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
 
       const index = node.index();
       if (typeof index === "undefined") return;
 
       if (index === 0) return; // TODO: Jump via parent?
 
-      const siblings = node.parent()?.children() ?? graph.roots();
+      const siblings = node.parent()?.children() ?? main.roots();
       if (!siblings) return;
 
       const left = siblings[index - 1];
@@ -150,12 +149,12 @@ export function Canvas({ doc }: CanvasProps) {
 
   const onNodeNext = (id: NodeId) => {
     if (id !== root.id) {
-      const node = graph.getNodeByID(id);
+      const node = main.getNodeByID(id);
 
       const index = node.index();
       if (typeof index === "undefined") return;
 
-      const siblings = node.parent()?.children() ?? graph.roots();
+      const siblings = node.parent()?.children() ?? main.roots();
       if (!siblings) return;
 
       if (index >= siblings.length - 1) return; // TODO: Jump via parent?
@@ -261,8 +260,8 @@ export function Canvas({ doc }: CanvasProps) {
                               (/* event */) => {
                                 const child =
                                   node.data.id === root.id
-                                    ? graph.createNode()
-                                    : graph
+                                    ? main.createNode()
+                                    : main
                                         .getNodeByID(node.data.id)
                                         .createNode();
 

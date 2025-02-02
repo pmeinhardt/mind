@@ -5,7 +5,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { ErrorFallback } from "./ErrorFallback";
 import { Home } from "./Home";
 import { Loading } from "./Loading";
-import type { Doc } from "./model/types";
+import type { Doc } from "./model";
 
 export type ApplicationProps = Record<string, never>;
 

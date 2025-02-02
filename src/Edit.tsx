@@ -1,7 +1,7 @@
 import { use } from "react";
 
-import { Editor } from "./edit/Editor";
-import type { Doc } from "./model/types";
+import { Editor } from "./editing/Editor";
+import type { Doc } from "./model";
 
 export type EditProps = { promise: Promise<Doc> };
 

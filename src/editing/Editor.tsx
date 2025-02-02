@@ -2,7 +2,7 @@ import type { VersionVector } from "loro-crdt";
 import { Peer } from "peerjs";
 import { useCallback, useEffect, useState } from "react";
 
-import type { Doc } from "../model/types";
+import type { Doc } from "../model";
 import { Bar } from "./Bar";
 import { Canvas } from "./Canvas";
 import { useConfirmNavigation } from "./useConfirmNavigation";
@@ -39,18 +39,6 @@ export function Editor({ doc }: EditorProps) {
   }, [doc]);
 
   // Receive updates from peers
-
-  // useEffect(() => {
-  //   const handler = (event: MessageEvent) => {
-  //     console.log("channel event", event);
-  //     const bytes = new Uint8Array(event.data);
-  //     doc.import(bytes);
-  //   };
-
-  //   channel.addEventListener("message", handler);
-
-  //   return () => channel.removeEventListener("message", handler);
-  // }, [doc, channel]);
 
   const [, setMe] = useState<Peer>();
 
@@ -143,8 +131,6 @@ export function Editor({ doc }: EditorProps) {
 
     setMe(peer);
   }, [doc, setMe]);
-
-  // TODO: Add error boundary
 
   return (
     <div className="relative h-dvh w-dvw">

@@ -2,8 +2,9 @@ import { Button } from "@headlessui/react";
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { isString } from "@sindresorhus/is";
 
-import { download } from "../download";
-import type { Doc } from "../model/types";
+import { download } from "../browser-utils/download";
+import { shallow } from "../export";
+import type { Doc } from "../model";
 
 function sanitize(name: string): string {
   return `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}`;
@@ -14,7 +15,8 @@ export type BarEventHandlers = { onCollaborate: () => void };
 export type BarProps = BarEventHandlers & { doc: Doc };
 
 export function Bar({ doc, onCollaborate }: BarProps) {
-  const meta = doc.getMap("meta");
+  const { meta } = doc;
+
   const name = meta.get("name");
 
   return (
@@ -44,14 +46,10 @@ export function Bar({ doc, onCollaborate }: BarProps) {
               className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
               type="button"
               onClick={() => {
-                const frontiers = doc.oplogFrontiers();
-                const bytes = doc.export({
-                  mode: "shallow-snapshot",
-                  frontiers,
-                });
+                const data = shallow(doc);
                 const mime = "application/octet-stream";
                 const filename = `${sanitize(name)}.mind`;
-                download([bytes], mime, filename);
+                download(mime, filename, data);
               }}
             >
               Save
