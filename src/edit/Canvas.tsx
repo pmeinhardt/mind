@@ -1,4 +1,4 @@
-import { isString, isUndefined } from "@sindresorhus/is";
+import { isString } from "@sindresorhus/is";
 import { Group } from "@visx/group";
 import { hierarchy, Tree } from "@visx/hierarchy";
 import { ParentSize } from "@visx/responsive";
@@ -172,100 +172,98 @@ export function Canvas({ doc }: CanvasProps) {
             }}
           >
             {(zoom) => (
-              <div className="relative">
-                <svg
-                  ref={zoom.containerRef}
-                  width={width}
-                  height={height}
-                  className={clsx(
-                    "touch-none",
-                    zoom.isDragging ? "cursor-grabbing" : "cursor-grab",
-                  )}
-                >
-                  <Group transform={zoom.toString()}>
-                    <Tree
-                      root={data}
-                      size={[width, height]}
-                      nodeSize={[nodeHeight * 1.5, nodeWidth * 2]}
-                      separation={(a, b) =>
-                        (a.parent === b.parent ? 2 : 3) / a.depth
-                      }
-                    >
-                      {(tree) => (
-                        <Group>
-                          {tree.links().map((link, key) => (
-                            <CanvasLink key={key} data={link} />
-                          ))}
+              <svg
+                ref={zoom.containerRef}
+                width={width}
+                height={height}
+                className={clsx(
+                  "touch-none",
+                  zoom.isDragging ? "cursor-grabbing" : "cursor-grab",
+                )}
+              >
+                <Group transform={zoom.toString()}>
+                  <Tree
+                    root={data}
+                    size={[width, height]}
+                    nodeSize={[nodeHeight * 1.5, nodeWidth * 2]}
+                    separation={(a, b) =>
+                      (a.parent === b.parent ? 2 : 3) / a.depth
+                    }
+                  >
+                    {(tree) => (
+                      <Group>
+                        {tree.links().map((link, key) => (
+                          <CanvasLink key={key} data={link} />
+                        ))}
 
-                          {tree.descendants().map((node, key) => (
-                            <CanvasNode
-                              key={key}
-                              depth={node.depth}
-                              focused={node.data.id === focusNodeId}
-                              x={node.x}
-                              y={node.y}
-                              onFocus={
-                                (/* event */) => {
-                                  setFocusNodeId(node.data.id);
-                                }
+                        {tree.descendants().map((node, key) => (
+                          <CanvasNode
+                            key={key}
+                            depth={node.depth}
+                            focused={node.data.id === focusNodeId}
+                            x={node.x}
+                            y={node.y}
+                            onFocus={
+                              (/* event */) => {
+                                setFocusNodeId(node.data.id);
                               }
-                              onBlur={
-                                (/* event */) => {
-                                  setFocusNodeId(undefined);
-                                }
+                            }
+                            onBlur={
+                              (/* event */) => {
+                                setFocusNodeId(undefined);
                               }
-                              onClick={(event) =>
-                                event.detail !== 1
-                                  ? onNodeToggle(node.data.id)
-                                  : onNodeSelect(node.data.id)
+                            }
+                            onClick={(event) =>
+                              event.detail !== 1
+                                ? onNodeToggle(node.data.id)
+                                : onNodeSelect(node.data.id)
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === " ") {
+                                onNodeToggle(node.data.id);
+                              } else if (event.key === "Enter") {
+                                onNodeSelect(node.data.id);
+                              } else if (event.key === "ArrowUp") {
+                                onNodePrev(node.data.id);
+                              } else if (event.key === "ArrowDown") {
+                                onNodeNext(node.data.id);
+                              } else if (event.key === "ArrowLeft") {
+                                onNodeUp(node.data.id);
+                              } else if (event.key === "ArrowRight") {
+                                onNodeDown(node.data.id);
+                              } else if (event.key === "Escape") {
+                                event.target.blur();
                               }
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                  onNodeToggle(node.data.id);
-                                } else if (event.key === " ") {
-                                  onNodeSelect(node.data.id);
-                                } else if (event.key === "Escape") {
-                                  event.target.blur();
-                                } else if (event.key === "ArrowUp") {
-                                  onNodePrev(node.data.id);
-                                } else if (event.key === "ArrowDown") {
-                                  onNodeNext(node.data.id);
-                                } else if (event.key === "ArrowLeft") {
-                                  onNodeUp(node.data.id);
-                                } else if (event.key === "ArrowRight") {
-                                  onNodeDown(node.data.id);
-                                }
-                              }}
-                              onCreateChildNode={
-                                (/* event */) => {
-                                  const n = graph.getNodeByID(node.data.id);
-                                  const nn = isUndefined(n)
+                            }}
+                            onCreateChildNode={
+                              (/* event */) => {
+                                const child =
+                                  node.data.id === root.id
                                     ? graph.createNode()
-                                    : n.createNode();
+                                    : graph
+                                        .getNodeByID(node.data.id)
+                                        .createNode();
 
-                                  const label = prompt("new label");
+                                const label = prompt("new label");
 
-                                  if (!isString(label) || label.length === 0) {
-                                    return;
-                                  }
+                                if (!isString(label)) return;
 
-                                  nn.data.set("label", label);
-                                  nn.data.set("expanded", true);
-                                  doc.commit();
-                                }
+                                child.data.set("label", label);
+                                child.data.set("expanded", true);
+                                doc.commit();
                               }
-                            >
-                              {node.depth === 0
-                                ? meta.get("name")
-                                : node.data.meta.label}
-                            </CanvasNode>
-                          ))}
-                        </Group>
-                      )}
-                    </Tree>
-                  </Group>
-                </svg>
-              </div>
+                            }
+                          >
+                            {node.data.id === root.id
+                              ? meta.get("name")
+                              : node.data.meta.label}
+                          </CanvasNode>
+                        ))}
+                      </Group>
+                    )}
+                  </Tree>
+                </Group>
+              </svg>
             )}
           </Zoom>
         );
