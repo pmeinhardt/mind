@@ -33,13 +33,18 @@ const h = (tree: LoroTree<Node>, meta: LoroMap<Meta>) =>
   hierarchy<RootNode | ItemNode>(root, (datum) => {
     if (datum === root) {
       if (meta.get("expanded") === false) return undefined;
-      return (tree.roots() as LoroTreeNode<Node>[]).map(f);
+      return (tree.roots() as LoroTreeNode<Node>[])
+        .filter((node: LoroTreeNode) => !node.isDeleted())
+        .map(f);
     }
 
     const node = tree.getNodeByID(datum.id as TreeID);
     if (node.data.get("expanded") === false) return undefined;
 
-    return node.children()?.map(f);
+    return node
+      .children()
+      ?.filter((node: LoroTreeNode) => !node.isDeleted())
+      ?.map(f);
   });
 
 const scale = { min: 0.5, max: 4.0 } as const;
