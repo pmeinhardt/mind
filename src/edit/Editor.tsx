@@ -147,12 +147,12 @@ export function Editor({ doc }: EditorProps) {
   // TODO: Add error boundary
 
   return (
-    <div className="h-dvh w-dvw">
-      <div className="h-full w-full">
-        <Canvas doc={doc} />
-      </div>
+    <div className="relative h-dvh w-dvw">
       <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
         <Bar doc={doc} onCollaborate={onCollaborate} />
+      </div>
+      <div className="h-full w-full">
+        <Canvas doc={doc} />
       </div>
     </div>
   );
