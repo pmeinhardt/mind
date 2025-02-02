@@ -1,6 +1,6 @@
-export type LoadingProps = Record<string, never>;
+export type LoadingProps = { message?: string };
 
-export function Loading(_: LoadingProps) {
+export function Loading({ message = "Loading..." }: LoadingProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-white/60 backdrop-blur">
       <div className="flex items-center gap-2 rounded-full px-12 py-8 text-4xl font-semibold text-violet-500">
@@ -26,7 +26,7 @@ export function Loading(_: LoadingProps) {
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
-        Loading...
+        {message}
       </div>
     </div>
   );
