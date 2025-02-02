@@ -75,6 +75,7 @@ export function Canvas({ doc }: CanvasProps) {
       const parent = node.parent();
       const index = node.index() ?? 0;
       const next = main.createNode(parent?.id, index + 1);
+      next.data.set("label", "");
       doc.commit();
       setFocusNodeId(next.id);
     }
