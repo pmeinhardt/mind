@@ -70,7 +70,18 @@ export function Canvas({ doc }: CanvasProps) {
     }
   };
 
-  const onNodeSelect = (id: NodeId) => {
+  const onAddNode = (id: NodeId) => {
+    if (id !== root.id) {
+      const node = graph.getNodeByID(id);
+      const parent = node.parent();
+      const index = node.index() ?? 0;
+      const next = graph.createNode(parent?.id, index + 1);
+      doc.commit();
+      setFocusNodeId(next.id);
+    }
+  };
+
+  const onNodeEdit = (id: NodeId) => {
     if (id === root.id) {
       const prev = meta.get("name");
       const name = prompt("new name", prev);
@@ -221,13 +232,15 @@ export function Canvas({ doc }: CanvasProps) {
                             onClick={(event) =>
                               event.detail !== 1
                                 ? onNodeToggle(node.data.id)
-                                : onNodeSelect(node.data.id)
+                                : onNodeEdit(node.data.id)
                             }
                             onKeyDown={(event) => {
                               if (event.key === " ") {
                                 onNodeToggle(node.data.id);
                               } else if (event.key === "Enter") {
-                                onNodeSelect(node.data.id);
+                                onAddNode(node.data.id);
+                              } else if (event.key === "Backspace") {
+                                // onNodeDelete(node.data.id);
                               } else if (event.key === "ArrowUp") {
                                 onNodePrev(node.data.id);
                               } else if (event.key === "ArrowDown") {
@@ -236,8 +249,12 @@ export function Canvas({ doc }: CanvasProps) {
                                 onNodeUp(node.data.id);
                               } else if (event.key === "ArrowRight") {
                                 onNodeDown(node.data.id);
+                              } else if (event.key === "Tab") {
+                                // …
                               } else if (event.key === "Escape") {
                                 event.target.blur();
+                              } else {
+                                onNodeEdit(node.data.id);
                               }
                             }}
                             onCreateChildNode={
