@@ -251,10 +251,10 @@ export function Canvas({ doc }: CanvasProps) {
                                 onNodeDown(node.data.id);
                               } else if (event.key === "Tab") {
                                 // …
+                              } else if (event.key === "e") {
+                                onNodeEdit(node.data.id);
                               } else if (event.key === "Escape") {
                                 event.target.blur();
-                              } else {
-                                onNodeEdit(node.data.id);
                               }
                             }}
                             onCreateChildNode={
