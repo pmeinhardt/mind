@@ -1,6 +1,6 @@
-import { Button } from "@headlessui/react";
-import { BoltIcon } from "@heroicons/react/24/outline";
+import { Button, Field, Label, Switch } from "@headlessui/react";
 import { isString } from "@sindresorhus/is";
+import type { Peer } from "peerjs";
 
 import { download } from "../browser-utils/download";
 import { markdown, shallow } from "../export";
@@ -10,11 +10,15 @@ function sanitize(name: string): string {
   return `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}`;
 }
 
-export type BarEventHandlers = { onCollaborate: () => void };
+export type BarEventHandlers = { onConnect: (enabled: boolean) => void };
 
-export type BarProps = BarEventHandlers & { doc: Doc };
+export type BarProps = BarEventHandlers & {
+  doc: Doc;
+  connection: Peer | undefined;
+  connected: boolean;
+};
 
-export function Bar({ doc, onCollaborate }: BarProps) {
+export function Bar({ doc, connection, connected, onConnect }: BarProps) {
   const { meta } = doc;
 
   const name = meta.get("name");
@@ -92,18 +96,19 @@ export function Bar({ doc, onCollaborate }: BarProps) {
         </ul>
       </div>
       <div className="flex items-center">
-        <ul className="flex gap-1">
-          <li>
-            <Button
-              className="flex items-center gap-2 rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
-              type="button"
-              onClick={onCollaborate}
-            >
-              Collaborate
-              <BoltIcon className="-mx-0.5 size-6" aria-hidden />
-            </Button>
-          </li>
-        </ul>
+        <Field className="flex items-center justify-center gap-2">
+          <Label className="font-normal text-stone-300">
+            {connected ? "Connected" : "Not connected"}
+          </Label>
+          <Switch
+            checked={connected}
+            disabled={connection && !connected}
+            onChange={onConnect}
+            className="group inline-flex h-6 w-11 items-center rounded-full bg-stone-200 transition data-[checked]:bg-purple-400"
+          >
+            <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-6" />
+          </Switch>
+        </Field>
       </div>
     </div>
   );

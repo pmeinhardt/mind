@@ -1,4 +1,4 @@
-import type { VersionVector } from "loro-crdt";
+import type { PeerOptions } from "peerjs";
 import { Peer } from "peerjs";
 import { useCallback, useEffect, useState } from "react";
 
@@ -17,9 +17,7 @@ export function Editor({ doc }: EditorProps) {
   const [, setVersion] = useState<string>("");
 
   useEffect(() => {
-    let last: VersionVector | undefined = undefined;
-
-    const unsubscribe = doc.subscribe((batch) => {
+    return doc.subscribe(() => {
       const vector = doc.version().toJSON();
 
       const v = Array.from(vector.entries())
@@ -27,115 +25,118 @@ export function Editor({ doc }: EditorProps) {
         .join(" ");
 
       setVersion(v);
-
-      if (batch.by === "local") {
-        const bytes = doc.export({ mode: "update", from: last });
-        last = doc.version();
-        // channel.postMessage(bytes);
-      }
     });
-
-    return unsubscribe;
   }, [doc]);
 
-  // Receive updates from peers
+  // Manage from peer connections
 
-  const [, setMe] = useState<Peer>();
+  const [connection, setConnection] = useState<Peer>();
+  const [connected, setConnected] = useState<boolean>(false);
 
-  const onCollaborate = useCallback(() => {
-    const peer = new Peer({
-      host: "localhost",
-      port: 9000,
-      path: "/",
+  const onConnect = useCallback(
+    (enabled: boolean) => {
+      if (enabled) {
+        if (connected || connection) return;
+
+        const options: PeerOptions = {
+          host: "localhost",
+          port: 9000,
+          path: "/",
+        };
+
+        const peer = new Peer(options);
+
+        peer.on("open", (id) => {
+          alert(`Connection ID: ${id}`); // TODO
+          console.log("peer connected", id);
+          setConnected(true);
+        });
+
+        peer.on("connection", (connection) => {
+          console.debug("connection", connection);
+
+          // TODO: Introduce new peer (connection.peer) to others
+
+          connection.on("iceStateChanged", (state) => {
+            console.debug("conn ice-state-change", state);
+          });
+
+          connection.on("open", () => {
+            console.debug("conn open");
+            connection.send(doc.export({ mode: "snapshot" }));
+          });
+
+          connection.on("data", (data) => {
+            console.debug("conn data", data);
+
+            // TODO: Import (or decode freshly joined peer ID and connect)
+
+            const buffer = data as ArrayBuffer;
+            doc.import(new Uint8Array(buffer));
+          });
+
+          connection.on("error", (error) => {
+            console.error("conn error", error);
+          });
+
+          connection.on("close", () => {
+            console.debug("conn close");
+          });
+        });
+
+        peer.on("disconnected", (id) => {
+          console.debug("peer disconnected", id);
+          setConnection(undefined);
+          setConnected(false);
+        });
+
+        peer.on("close", () => {
+          console.debug("peer close");
+          setConnection(undefined);
+          setConnected(false);
+        });
+
+        peer.on("error", (error) => {
+          console.error("peer error", error);
+          setConnection(undefined);
+          setConnected(false);
+        });
+
+        setConnection(peer);
+      } else {
+        connection?.destroy();
+        setConnection(undefined);
+        setConnected(false);
+      }
+    },
+    [doc, connection, setConnection, connected, setConnected],
+  );
+
+  useEffect(() => {
+    let previous = doc.version();
+
+    return doc.subscribe((batch) => {
+      if (connection && batch.by === "local") {
+        const version = doc.version();
+
+        for (const conn of Object.values(connection.connections)) {
+          conn.send(doc.export({ mode: "update", from: previous }));
+        }
+
+        previous = version;
+      }
     });
-
-    const remote = window.location.hash.replace(/^#/, "");
-    const mode = remote ? "collaborator" : "owner";
-
-    console.log(mode, remote);
-
-    if (mode === "owner") {
-      peer.on("open", (id) => {
-        const url = new URL(window.location.toString());
-        url.hash = id;
-
-        console.log(url.toString());
-      });
-
-      peer.on("connection", (connection) => {
-        console.debug("connection", connection);
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open");
-          connection.send(doc.exportSnapshot());
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    } else {
-      peer.on("open", () => {
-        console.debug(`connecting to ${remote}…`);
-
-        const connection = peer.connect(remote, { reliable: true });
-
-        connection.on("iceStateChanged", (state) => {
-          console.debug("conn ice-state-change", state);
-        });
-
-        connection.on("open", () => {
-          console.debug("conn open", peer.id);
-          connection.send("HELO");
-        });
-
-        connection.on("data", (data) => {
-          console.debug("conn data", data);
-          const buffer = data as ArrayBuffer;
-          doc.import(new Uint8Array(buffer));
-        });
-
-        connection.on("error", (error) => {
-          console.error("conn error", error);
-        });
-
-        connection.on("close", () => {
-          console.debug("conn close");
-        });
-      });
-    }
-
-    peer.on("disconnected", (id) => {
-      console.debug("peer disconnected", id);
-    });
-
-    peer.on("close", () => {
-      console.debug("peer close");
-    });
-
-    peer.on("error", (error) => {
-      console.error("peer error", error);
-    });
-
-    setMe(peer);
-  }, [doc, setMe]);
+  }, [doc, connection]);
 
   return (
     <div className="relative h-dvh w-dvw">
       <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
-        <Bar doc={doc} onCollaborate={onCollaborate} />
+        <Bar
+          doc={doc}
+          connection={connection}
+          connected={connected}
+          onConnect={onConnect}
+        />
       </div>
       <div className="h-full w-full">
         <Canvas doc={doc} />
