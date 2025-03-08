@@ -59,7 +59,7 @@ export function verify(doc: LoroDoc): asserts doc is Doc {
 
   for (const node of main.getNodes()) {
     if (typeof node.data.get("label") !== "string") {
-      throw Error("node data is missing required property 'data'");
+      throw Error("node data is missing required property 'label'");
     }
   }
 }
