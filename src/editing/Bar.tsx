@@ -1,6 +1,8 @@
 import { Button, Field, Label, Switch } from "@headlessui/react";
 import { isString } from "@sindresorhus/is";
 import type { Peer } from "peerjs";
+import type { ChangeEvent } from "react";
+import { useCallback } from "react";
 
 import { download } from "../browser-utils/download";
 import { markdown, shallow } from "../export";
@@ -10,7 +12,10 @@ function sanitize(name: string): string {
   return `${name.replace(/^\./, "").replace(/[\\/]/g, " - ")}`;
 }
 
-export type BarEventHandlers = { onConnect: (enabled: boolean) => void };
+export type BarEventHandlers = {
+  load: (files: File[]) => void;
+  onConnect: (enabled: boolean) => void;
+};
 
 export type BarProps = BarEventHandlers & {
   doc: Doc;
@@ -18,10 +23,18 @@ export type BarProps = BarEventHandlers & {
   connected: boolean;
 };
 
-export function Bar({ doc, connection, connected, onConnect }: BarProps) {
+export function Bar({ doc, load, connection, connected, onConnect }: BarProps) {
   const { meta } = doc;
 
   const name = meta.get("name");
+
+  const onFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target?.files ?? []);
+      load(files);
+    },
+    [load],
+  );
 
   return (
     <div className="flex max-w-4xl grow items-center justify-between rounded-xl border border-stone-200 bg-white p-2">
@@ -45,6 +58,22 @@ export function Bar({ doc, connection, connected, onConnect }: BarProps) {
         </div>
         {/* TODO: Dropdown menu instead of hidden for smaller screens */}
         <ul className="hidden items-center gap-1 sm:flex">
+          <li>
+            <label
+              className="flex cursor-pointer items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"
+              htmlFor="file-input"
+            >
+              Open
+            </label>
+
+            <input
+              id="file-input"
+              className="sr-only"
+              type="file"
+              accept=".mind"
+              onChange={onFile}
+            />
+          </li>
           <li>
             <Button
               className="flex items-center rounded-lg px-3 py-2 font-normal text-stone-300 transition-colors duration-300 hover:bg-purple-300/30 hover:text-purple-600"

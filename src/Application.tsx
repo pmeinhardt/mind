@@ -19,14 +19,8 @@ export function Application(_: ApplicationProps) {
     (files: File[]) => {
       if (files.length > 0) {
         const file = files[0]; // we expect one file, any additional files will be ignored
-
-        const controller = new AbortController();
-        const signal = controller.signal;
-
-        const promise = Doc.read(file, signal);
+        const promise = Doc.read(file);
         init(promise);
-
-        return () => controller.abort();
       }
     },
     [init],
@@ -36,7 +30,7 @@ export function Application(_: ApplicationProps) {
     <ErrorBoundary fallback={ErrorFallback}>
       <Suspense fallback={<Loading />}>
         <DropZone action={load}>
-          <Editor promise={promise} />
+          <Editor load={load} promise={promise} />
         </DropZone>
       </Suspense>
     </ErrorBoundary>

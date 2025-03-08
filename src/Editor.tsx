@@ -9,11 +9,11 @@ import { useConfirmNavigation } from "./editing/useConfirmNavigation";
 import type { Doc } from "./model";
 
 export type EditorProps = {
-  load: (file: File) => void;
+  load: (files: File[]) => void;
   promise: Promise<Doc>;
 };
 
-export function Editor({ promise }: EditorProps) {
+export function Editor({ load, promise }: EditorProps) {
   const doc = use(promise);
 
   useConfirmNavigation(true);
@@ -139,6 +139,7 @@ export function Editor({ promise }: EditorProps) {
       <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
         <Bar
           doc={doc}
+          load={load}
           connection={connection}
           connected={connected}
           onConnect={onConnect}
