@@ -2,33 +2,20 @@ import type { LoroMap, LoroTree } from "loro-crdt";
 import { LoroDoc } from "loro-crdt";
 
 export class Doc extends LoroDoc<Structure> {
-  static async read(file: File): Promise<Doc> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  static async read(file: File, signal?: AbortSignal): Promise<Doc> {
+    signal?.throwIfAborted(); // throw immediately if the signal is already aborted
 
-      reader.addEventListener("load", (event) => {
-        const buffer = event.target?.result;
+    const buffer = await file.arrayBuffer();
 
-        if (typeof buffer === "undefined" || buffer === null) return;
+    signal?.throwIfAborted(); // throw if the signal was aborted while reading the file
 
-        const bytes = new Uint8Array(buffer as ArrayBuffer);
-        const doc = new Doc();
+    const bytes = new Uint8Array(buffer);
+    const doc = new Doc();
 
-        try {
-          doc.import(bytes);
-          verify(doc);
-          resolve(doc);
-        } catch (error) {
-          reject(error);
-        }
-      });
+    doc.import(bytes);
+    verify(doc);
 
-      reader.addEventListener("error", () => {
-        reject(new Error("failed to read file"));
-      });
-
-      reader.readAsArrayBuffer(file);
-    });
+    return doc;
   }
 
   constructor(name?: string) {
