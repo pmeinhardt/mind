@@ -11,8 +11,7 @@ export function snapshot(doc: Doc): BlobPart {
 }
 
 export function shallow(doc: Doc): BlobPart {
-  const frontiers = doc.oplogFrontiers();
-  return doc.export({ mode: "shallow-snapshot", frontiers });
+  return doc.export({ mode: "shallow-snapshot", frontiers: doc.frontiers() });
 }
 
 export function markdown(doc: Doc): BlobPart {
