@@ -3,7 +3,7 @@ import url from "node:url";
 
 import { includeIgnoreFile as ignore } from "@eslint/compat";
 import javascript from "@eslint/js";
-import jest from "eslint-plugin-jest";
+import vitest from "@vitest/eslint-plugin";
 import jsxa11y from "eslint-plugin-jsx-a11y";
 import prettier from "eslint-plugin-prettier/recommended";
 import react from "eslint-plugin-react";
@@ -96,11 +96,16 @@ export default config(
     },
   },
 
-  // Jest (https://github.com/jest-community/eslint-plugin-jest)
+  // Vitest (https://github.com/vitest-dev/eslint-plugin-vitest)
 
   {
     files: ["**/*.test.{js,jsx,mjs,ts,tsx}"],
-    ...jest.configs["flat/recommended"],
+    plugins: {
+      vitest,
+    },
+    rules: {
+      ...vitest.configs.recommended.rules,
+    },
   },
 
   // Prettier (https://github.com/prettier/eslint-plugin-prettier)

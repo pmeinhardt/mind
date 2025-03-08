@@ -1,4 +1,5 @@
 import type { LoroTree, LoroTreeNode } from "loro-crdt";
+import { expect, test } from "vitest";
 
 import type { Node } from "../model";
 import { Doc } from "../model";
