@@ -1,26 +1,44 @@
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 
+import { DropZone } from "./DropZone";
 import { Edit } from "./Edit";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { ErrorFallback } from "./ErrorFallback";
-import { Home } from "./Home";
 import { Loading } from "./Loading";
-import type { Doc } from "./model";
+import { Doc } from "./model";
 
 export type ApplicationProps = Record<string, never>;
 
 export function Application(_: ApplicationProps) {
-  const [promise, init] = useState<Promise<Doc> | null>(null);
+  const [promise, init] = useState<Promise<Doc>>(() => {
+    const doc = new Doc("Ideas"); // create a new, empty document
+    return Promise.resolve(doc);
+  });
+
+  const load = useCallback(
+    (files: File[]) => {
+      if (files.length > 0) {
+        const file = files[0]; // we expect one file, any additional files will be ignored
+
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const promise = Doc.read(file, signal);
+        init(promise);
+
+        return () => controller.abort();
+      }
+    },
+    [init],
+  );
 
   return (
     <ErrorBoundary fallback={ErrorFallback}>
-      {promise ? (
-        <Suspense fallback={<Loading />}>
+      <Suspense fallback={<Loading />}>
+        <DropZone action={load}>
           <Edit promise={promise} />
-        </Suspense>
-      ) : (
-        <Home init={init} />
-      )}
+        </DropZone>
+      </Suspense>
     </ErrorBoundary>
   );
 }
