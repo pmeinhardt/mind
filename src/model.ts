@@ -31,6 +31,14 @@ export class Doc extends LoroDoc<Structure> {
     });
   }
 
+  constructor(name?: string) {
+    super();
+
+    if (typeof name === "string") {
+      this.meta.set("name", name);
+    }
+  }
+
   get main(): LoroTree<Node> {
     return this.getTree("main");
   }
