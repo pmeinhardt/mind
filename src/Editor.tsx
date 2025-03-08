@@ -3,9 +3,9 @@ import { Peer } from "peerjs";
 import { useCallback, useEffect, useState } from "react";
 import { use } from "react";
 
-import { Bar } from "./editing/Bar";
-import { Canvas } from "./editing/Canvas";
-import { useConfirmNavigation } from "./editing/useConfirmNavigation";
+import { Bar } from "./editor/Bar";
+import { Canvas } from "./editor/Canvas";
+import { useConfirmNavigation } from "./editor/useConfirmNavigation";
 import type { Doc } from "./model";
 
 export type EditorProps = {
