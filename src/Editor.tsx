@@ -5,6 +5,7 @@ import { use } from "react";
 
 import { Bar } from "./editor/Bar";
 import { Canvas } from "./editor/Canvas";
+import { Header, Layout, Main } from "./editor/Layout";
 import { useConfirmNavigation } from "./editor/useConfirmNavigation";
 import type { Doc } from "./model";
 
@@ -135,8 +136,8 @@ export function Editor({ load, promise }: EditorProps) {
   }, [doc, connection]);
 
   return (
-    <div className="relative h-dvh w-dvw">
-      <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
+    <Layout>
+      <Header>
         <Bar
           doc={doc}
           load={load}
@@ -144,10 +145,10 @@ export function Editor({ load, promise }: EditorProps) {
           connected={connected}
           onConnect={onConnect}
         />
-      </div>
-      <div className="h-full w-full">
+      </Header>
+      <Main>
         <Canvas doc={doc} />
-      </div>
-    </div>
+      </Main>
+    </Layout>
   );
 }
