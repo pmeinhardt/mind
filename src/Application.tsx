@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useState } from "react";
 
 import { DropZone } from "./DropZone";
-import { Edit } from "./Edit";
+import { Editor } from "./Editor";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { ErrorFallback } from "./ErrorFallback";
 import { Loading } from "./Loading";
@@ -36,7 +36,7 @@ export function Application(_: ApplicationProps) {
     <ErrorBoundary fallback={ErrorFallback}>
       <Suspense fallback={<Loading />}>
         <DropZone action={load}>
-          <Edit promise={promise} />
+          <Editor promise={promise} />
         </DropZone>
       </Suspense>
     </ErrorBoundary>

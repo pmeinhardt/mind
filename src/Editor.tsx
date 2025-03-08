@@ -1,15 +1,21 @@
 import type { PeerOptions } from "peerjs";
 import { Peer } from "peerjs";
 import { useCallback, useEffect, useState } from "react";
+import { use } from "react";
 
-import type { Doc } from "../model";
-import { Bar } from "./Bar";
-import { Canvas } from "./Canvas";
-import { useConfirmNavigation } from "./useConfirmNavigation";
+import { Bar } from "./editing/Bar";
+import { Canvas } from "./editing/Canvas";
+import { useConfirmNavigation } from "./editing/useConfirmNavigation";
+import type { Doc } from "./model";
 
-export type EditorProps = { doc: Doc };
+export type EditorProps = {
+  load: (file: File) => void;
+  promise: Promise<Doc>;
+};
 
-export function Editor({ doc }: EditorProps) {
+export function Editor({ promise }: EditorProps) {
+  const doc = use(promise);
+
   useConfirmNavigation(true);
 
   // Send updates to peers
