@@ -10,7 +10,7 @@ export type HeaderProps = { children: ReactNode | undefined };
 
 export function Header({ children }: HeaderProps) {
   return (
-    <div className="absolute left-0 right-0 top-0 flex items-center justify-center p-4">
+    <div className="absolute top-0 right-0 left-0 flex items-center justify-center p-4">
       {children}
     </div>
   );
