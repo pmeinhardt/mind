@@ -44,7 +44,7 @@ export function Bar({ doc, load, connection, connected, onConnect }: BarProps) {
             {name}
           </h2>
           <Button
-            className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
+            className="absolute top-0 right-0 bottom-0 left-0 overflow-hidden rounded-lg bg-transparent transition-colors duration-300 hover:bg-purple-400/30"
             type="button"
             onClick={() => {
               const n = prompt("New name", name);
