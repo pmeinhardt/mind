@@ -53,7 +53,7 @@ export function DropZone({ children, action }: DropZoneProps) {
           "items-center",
           "justify-center",
           "bg-white/60",
-          "backdrop-blur",
+          "backdrop-blur-sm",
           !isDragging && "hidden",
         )}
       >

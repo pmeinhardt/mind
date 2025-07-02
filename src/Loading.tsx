@@ -2,7 +2,7 @@ export type LoadingProps = { message?: string };
 
 export function Loading({ message = "Loading..." }: LoadingProps) {
   return (
-    <div className="fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center bg-white/60 backdrop-blur">
+    <div className="fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
       <div className="flex items-center gap-2 rounded-full px-12 py-8 text-4xl font-semibold text-violet-500">
         <svg
           className="mr-3 -ml-1 size-8 animate-spin"
