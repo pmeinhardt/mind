@@ -19,7 +19,8 @@ export function Editor({ load, promise }: EditorProps) {
 
   useConfirmNavigation(true);
 
-  // Send updates to peers
+  // Re-render on document changes
+  // TODO: Subscribe to parts of the document that are actually used further down in the component tree to avoid unnecessary re-renders
 
   const [, setVersion] = useState<string>("");
 
