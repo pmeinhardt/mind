@@ -10,7 +10,7 @@ export class Doc extends LoroDoc<Structure> {
     signal?.throwIfAborted(); // throw if the signal was aborted while reading the file
 
     const bytes = new Uint8Array(buffer);
-    const doc = new Doc();
+    const doc = new LoroDoc();
 
     doc.import(bytes);
     verify(doc);
@@ -18,12 +18,10 @@ export class Doc extends LoroDoc<Structure> {
     return doc;
   }
 
-  constructor(name?: string) {
-    super();
-
-    if (typeof name === "string") {
-      this.meta.set("name", name);
-    }
+  constructor(name?: string, id?: string) {
+    super(); // initialize empty Loro document
+    this.meta.set("name", name ?? "Untitled");
+    this.meta.set("id", id ?? crypto.randomUUID());
   }
 
   get main(): LoroTree<Node> {
@@ -40,6 +38,10 @@ export function verify(doc: LoroDoc): asserts doc is Doc {
 
   if (typeof meta.get("name") !== "string") {
     throw Error("document meta is missing required property 'name'");
+  }
+
+  if (typeof meta.get("id") !== "string") {
+    throw Error("document meta is missing required property 'id'");
   }
 
   const main = doc.getTree("main");
@@ -63,5 +65,6 @@ export type Node = {
 
 export type Meta = {
   expanded?: boolean;
+  id: string;
   name: string;
 };
