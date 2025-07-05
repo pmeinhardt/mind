@@ -6,7 +6,7 @@ Disclaimer: This is very much a work in progress. ⚠️
 
 ## Prerequisites
 
-For development, you will need [Node.js](https://nodejs.org/) (v20+).
+For development, you will need [Node.js](https://nodejs.org/) (v22+).
 
 ## Get started
 
