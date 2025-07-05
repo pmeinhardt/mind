@@ -17,28 +17,26 @@ export function shallow(doc: Doc): BlobPart {
 export function markdown(doc: Doc): BlobPart {
   const { main, meta } = doc;
 
-  const output = [];
-
-  output.push(`# ${meta.get("name")}\n`);
+  const lines = [`# ${meta.get("name")}`, ""];
 
   const indent = (level: number, line: string) => " ".repeat(4 * level) + line;
 
-  for (const root of main.roots()) {
-    const stack: (readonly [number, LoroTreeNode<Node>])[] = [
-      [0, root as LoroTreeNode<Node>],
-    ];
+  const stack: (readonly [number, LoroTreeNode<Node>])[] = main
+    .roots()
+    .slice()
+    .reverse()
+    .map((root) => [0, root as LoroTreeNode<Node>]);
 
-    while (stack.length > 0) {
-      const [level, node] = stack.pop()!;
+  while (stack.length > 0) {
+    const [level, node] = stack.pop()!;
 
-      output.push(indent(level, `- ${node.data.get("label")}`));
+    lines.push(indent(level, `- ${node.data.get("label")}`));
 
-      const children = node.children()?.filter((n) => !n.isDeleted()) ?? [];
-      children.sort((a, b) => b.index()! - a.index()!);
+    const children = node.children()?.filter((n) => !n.isDeleted()) ?? [];
+    children.sort((a, b) => b.index()! - a.index()!);
 
-      stack.push(...children.map((n) => [level + 1, n] as const));
-    }
+    stack.push(...children.map((n) => [level + 1, n] as const));
   }
 
-  return output.join("\n");
+  return lines.join("\n");
 }
