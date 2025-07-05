@@ -39,16 +39,18 @@ export function DropZone({ children, action }: DropZoneProps) {
   );
 
   return (
-    <div onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
+    <div
+      className="relative"
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       {children}
 
       <div
         className={clsx(
-          "fixed",
-          "bottom-0",
-          "left-0",
-          "right-0",
-          "top-0",
+          "absolute",
+          "inset-0",
           "flex",
           "items-center",
           "justify-center",
