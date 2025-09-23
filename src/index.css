@@ -1,7 +1,0 @@
-@import "tailwindcss";
-
-@layer base {
-  *:focus-visible {
-    @apply outline-solid outline-purple-300/75 outline-4;
-  }
-}
